@@ -159,3 +159,9 @@ codegen/
 
 # Octave session info
 octave-workspace
+
+# figures 
+.fig
+
+# mat files (results etc)
+.mat
