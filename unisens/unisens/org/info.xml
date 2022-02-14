@@ -1,0 +1,29 @@
+<productinfo
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="optional">
+<?xml-stylesheet type="text/xsl" href="optional"?>
+
+<matlabrelease>R2007b</matlabrelease>
+<name>Unisens</name>
+<type>toolbox</type>
+<icon>img/unisens.gif</icon>
+<help_location></help_location>
+
+<list>
+
+
+<listitem>
+<label>Demos</label>
+<callback>web(publish('unisens_example', 'html'))</callback>
+<icon>$docroot/techdoc/matlab_env/examples/demoicon.gif</icon>
+</listitem>
+
+<listitem>
+<label>Web Site (Web)</label>
+<callback>web http://www.unisens.org</callback>
+<icon>$docroot/techdoc/matlab_env/examples/webicon.gif</icon>
+</listitem>
+
+</list>
+
+</productinfo>
