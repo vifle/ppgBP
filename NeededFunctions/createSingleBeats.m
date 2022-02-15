@@ -37,6 +37,13 @@ function [singleBeatsProcessed,singleBeats,importantPoints] = createSingleBeats(
 % gesamtes signal geben... (vllt am ende nochmal signal mit maximal großen
 % borders zerlegen?
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% TODO:
+
+% problem: bei Fabi hat das mit beat indices in 1xN nicht geklappt --> das
+% mal vorher auslesen und anpassen
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 %% check input arguments
 % both signal and sampling frequency are needed
 if(nargin<3)
@@ -274,14 +281,14 @@ for currentWindow = 1:numWindows
     if(currentWindow==1 && numInsertBefore > 0)
         for insertion = 1:numInsertBefore
             singleBeatsWindow = [{NaN},singleBeatsWindow];
-            singleBeatsProcessedWindow = [{NaN},singleBeatsProcessedWindow];
-            importantPointsWindow = [importantPointsInsert,importantPointsWindow];
+            singleBeatsProcessedWindow = [{NaN};singleBeatsProcessedWindow];
+            importantPointsWindow = [importantPointsInsert;importantPointsWindow];
         end
     end
     if((currentWindow==numWindows || currentWindow==numWindows-1) && numInsertAfter > 0)
         for insertion = 1:numInsertAfter
-            singleBeatsWindow = [singleBeatsWindow,{NaN}];
-            singleBeatsProcessedWindow = [singleBeatsProcessedWindow,{NaN}];
+            singleBeatsWindow = [singleBeatsWindow;{NaN}];
+            singleBeatsProcessedWindow = [singleBeatsProcessedWindow;{NaN}];
             importantPointsWindow = [importantPointsWindow,importantPointsInsert];
         end
     end
