@@ -22,9 +22,9 @@ clc
 
 %% choose steps to be executed
 doDecomposition = true;
-doFeatureExtraction = true;
-doTraining = true;
-doTesting = true;
+doFeatureExtraction = false;
+doTraining = false;
+doTesting = false;
 
 %% get path to datasets
 if(strcmp(getenv('username'),'vince'))
@@ -36,27 +36,30 @@ else
 end
 baseDatasetDir = [networkDrive,'\FleischhauerVincent\sciebo_appendix\Forschung\Konferenzen\Paper_PPG_BP\Data\Datasets\'];
 
+%% initialize settings
+settings = struct;
+
 %% decomposeRealData
 if(doDecomposition)
+    settings.Decomposition = struct;
+    
     % settings
-    doExclusion = false;
-    extractFullDataset = false;
-    nrmseThreshold = 0.4;
-    dataset ='CPT';
+    settings.Decomposition.doExclusion = false;
+    settings.Decomposition.extractFullDataset = false;
+    settings.Decomposition.nrmseThreshold = 0.4;
+    settings.Decomposition.dataset ='CPT';
 
     % dirs
-    toDir = '2022_02_02'; % ending of dir to which data will be saved
-    % function that reads input dir for a file that contains information on
-    % which data is used for calculation and takes this information and adds
-    % new information from this section here
+    settings.Decomposition.toDir = '2022_02_15'; % ending of dir to which data will be saved
 
-    % hier im Speziellen diese doExclusionNummer rausnehmen aus dem
-    % Speicherpfad (also NoEx) --> Einstellungen sollen ja über datei
-    % nachverfolgbar sein
+    % execute function that stores settings
+    storeSettings(baseDatasetDir,settings);
 
     % execute function
-    decomposeRealData(baseDatasetDir,dirEnding,doExclusion,extractFullDataset,...
-        nrmseThreshold,dataset)
+    decomposeRealData(baseDatasetDir,settings.Decomposition.toDir, ...
+        settings.Decomposition.doExclusion,settings.Decomposition.extractFullDataset,...
+        settings.Decomposition.nrmseThreshold,settings.Decomposition.dataset)
+    
 end
 
 %% extractFeatures

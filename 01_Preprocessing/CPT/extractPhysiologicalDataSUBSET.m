@@ -46,10 +46,10 @@ else
 end
 baseFolder = [networkDrive,'\FleischhauerVincent\sciebo_appendix\Forschung\Konferenzen\Paper_PPG_BP\Data\Datasets\CPT\'];
 unisensFolder=[baseFolder,'measurements\'];%unisens directory where data is stored
-resultsFolder = [baseFolder,'realDataSUBSET\'];
+resultsFolder = [baseFolder,'realData\SUBSET\'];
 patients=textread([unisensFolder 'allSubjects.dat'],'%s');%loads list with patient
 load([unisensFolder 'epochs.mat']) %loads a variable where names of epochs are stored
-pathToPPGI = '..\..\..\..\..\Paper_PulseDecompositionAnalysis\MatlabCombination\Decomposition\Data\CPT\realData'; % path to PPGI data
+pathToPPGI = [baseFolder 'ppgiData']; % path to PPGI data
 
 
 % create PPG filter (this filter will be used to smooth the reference PPG)

@@ -1,4 +1,4 @@
-function [] = decomposeRealData(baseDatasetDir,dirEnding,doExclusion,extractFullDataset,nrmseThreshold,dataset)
+function [] = decomposeRealData(baseDatasetDir,toDir,doExclusion,extractFullDataset,nrmseThreshold,dataset)
 
 %% TODO
 % consider class 3/4 beats in exclusions
@@ -26,12 +26,12 @@ end
 
 % specify source and results folder
 if(extractFullDataset)
-    sourceFolder=['Datasets\' dataset '\realDataFULL\'];
-    resultsFolder=['Datasets\' dataset '\decompositionBeatwiseFULL_NOEX_2021_08_04\']; % TODO: get NOEX or not automatically
+    sourceFolder=[baseDatasetDir dataset '\realData\FULL\'];
+    resultsFolder=[baseDatasetDir dataset '\Decomposition\FULL\' toDir '\'];
 else
-    sourceFolder=['Datasets\' dataset '\realDataSUBSET\'];
-    resultsFolder=['Datasets\' dataset '\decompositionBeatwiseSUBSET_NOEX_2022_01_05\'];
-    load(['Datasets\' dataset '\epochs.mat']);
+    sourceFolder=[baseDatasetDir dataset '\realData\SUBSET\'];
+    resultsFolder=[baseDatasetDir dataset '\Decomposition\SUBSET\' toDir '\'];
+    load([baseDatasetDir dataset '\measurements\epochs.mat']);
 end
 % load data information
 load([sourceFolder 'physiologicalMeasuresTable.mat']);

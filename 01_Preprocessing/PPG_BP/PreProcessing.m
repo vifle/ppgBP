@@ -39,7 +39,7 @@ else
 end
 baseFolder = [networkDrive,'\FleischhauerVincent\sciebo_appendix\Forschung\Konferenzen\Paper_PPG_BP\Data\Datasets\PPG_BP\'];
 sourceFolder=[baseFolder,'measurements\'];
-resultsFolder = [baseFolder,'realDataSUBSET\'];
+resultsFolder = [baseFolder,'realData\SUBSET\'];
 
 %% Parameters
 % specify signal parameters

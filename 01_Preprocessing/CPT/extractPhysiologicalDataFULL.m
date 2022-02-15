@@ -53,7 +53,7 @@ else
 end
 baseFolder = [networkDrive,'\FleischhauerVincent\sciebo_appendix\Forschung\Konferenzen\Paper_PPG_BP\Data\Datasets\CPT\'];
 unisensFolder=[baseFolder,'measurements\'];%unisens directory where data is stored
-resultsFolder = [baseFolder,'realDataFULL\'];
+resultsFolder = [baseFolder,'realData\FULL\'];
 patients=textread([unisensFolder 'allSubjects.dat'],'%s');%loads list with patient
 load([unisensFolder 'epochs.mat']) %loads a variable where names of epochs are stored
 
