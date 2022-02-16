@@ -45,12 +45,12 @@ if(doDecomposition)
     
     % settings
     settings.Decomposition.doExclusion = false;
-    settings.Decomposition.extractFullDataset = false;
+    settings.Decomposition.extractFullDataset = true;
     settings.Decomposition.nrmseThreshold = 0.4;
     settings.Decomposition.dataset ='CPT';
 
     % dirs
-    settings.Decomposition.toDir = '2022_02_15'; % ending of dir to which data will be saved
+    settings.Decomposition.toDir = '2022_02_16'; % ending of dir to which data will be saved
 
     % execute function that stores settings
     storeSettings(baseDatasetDir,settings);

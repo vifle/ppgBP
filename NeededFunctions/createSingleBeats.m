@@ -17,8 +17,7 @@ function [singleBeatsProcessed,singleBeats,importantPoints] = createSingleBeats(
 % 'singleBeats':
 %
 
-%% TODO
-% option for no window (should work like before)
+%% TODO %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % 10s -> beachte, dass vllt nur wenige Schläge innerhalb der 10s gefunden
 % werden; falls zu wenige, dann nimm letze segment length, falls es noch
@@ -37,15 +36,11 @@ function [singleBeatsProcessed,singleBeats,importantPoints] = createSingleBeats(
 % gesamtes signal geben... (vllt am ende nochmal signal mit maximal großen
 % borders zerlegen?
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% TODO:
-
-% problem: bei Fabi hat das mit beat indices in 1xN nicht geklappt --> das
-% mal vorher auslesen und anpassen
+% check TODOs in code
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% check input arguments
-% both signal and sampling frequency are needed
+% signal, sampling frequency and beatindices are needed
 if(nargin<3)
     errordlg('Too few arguments','Input Error','modal');
     return;
@@ -65,13 +60,23 @@ if(~(isscalar(sampFreq) && ~(ischar(sampFreq)) && ~isstring(sampFreq)))
         'Input Error','modal');
     return;
 end
+% beatIndices needs to be an array with at least one element
+if(~(isvector(beatIndices) && ~(ischar(beatIndices)) && ~isstring(beatIndices)))
+    errordlg('beatIndices needs to be an array with at least one element',...
+        'Input Error','modal');
+    return;
+end
 % turn signal into 1xn array
 if(size(signal,1)>size(signal,2))
     signal = signal';
 end
+% turn beatIndices into nx1 array
+if(size(beatIndices,1)<size(beatIndices,2))
+    beatIndices = beatIndices';
+end
 % check optional arguments
 okargs = {'windowLength'} ; % allowed argument specifiers
-windowLength = 10; % window length
+windowLength = 10; % window length (default = 10s)
 i=1;
 while(1)
     if(mod(size(varargin,2),2)~=0) % check if number of variable arguments is even
@@ -101,23 +106,47 @@ while(1)
     
     switch actualArgument % set values for the actual arguments
         case 'windowLength'
-            if(~isscalar(varargin{i+1}))
-                errordlg('Window Length needs to be scalar',...
-                    'Input Error','modal');
-                return;
+            if(strcmp(varargin{i+1},'all'))
+                % set windowLength to whole signal
+                windowLength = numel(signal)/sampFreq;
+            else
+                if(~isscalar(varargin{i+1}))
+                    errordlg('Window Length needs to be scalar',...
+                        'Input Error','modal');
+                    return;
+                end
+                if(~((varargin{i+1} > 0) && (varargin{i+1} < numel(signal)/sampFreq)))
+                    errordlg('Window Length needs to be greater than 0 and smaller than signal duration',...
+                        'Input Error','modal');
+                    return;
+                end
+                windowLength = varargin{i+1};
             end
-            % TODO: window length must be greater than zero and less than
-            % whole signal;
-            % TODO: what about option not to use a window?
     end
     i=i+2;
 end
+
+%% assumptions
+maxHeartRate = 200; % assumed maximum heart rate in bpm
+minHeartRate = 35; % assumed minimum heart rate in bmp
+minBeatNumberWindow = 3; % assumed minimum number of beats in a window
+% TODO: needs to be adapted according to window length
+
+%% derived from assumptions
+minCardiacCycleTime = 1/(maxHeartRate/60); % minimum duration of a cardiac cycle in s
+minCardiacCycleNumBeats = minCardiacCycleTime*sampFreq; % minimum number of beats of a cardiac cycle
+maxCardiacCycleTime = 1/(minHeartRate/60); % maximum duration of a cardiac cycle in s
+maxCardiacCycleNumBeats = maxCardiacCycleTime*sampFreq; % maximum number of beats of a cardiac cycle
 
 %% do windowing
 % get window length(s)
 windowSamples = windowLength*sampFreq;
 numFullWindows = floor(numel(signal)/windowSamples);
-numWindows = numFullWindows + 1; % TODO: alsways the case? what if this is exactly numWindows?
+if(~(numFullWindows == numel(signal)/windowSamples)) % get number of windows
+    numWindows = numFullWindows + 1; 
+else
+    numWindows = numFullWindows;
+end
 
 % initialize containers for output
 singleBeatsProcessed = cell(0,0);
@@ -142,40 +171,29 @@ for currentWindow = 1:numWindows
     % get all beat indices within current window
     beatIndicesWindow = beatIndices(beatIndices>=windowBorderStart & beatIndices<=windowBorderEnd);
     
-    % TODO: what if beatIndicesWindow is empty?
-    % --> could (or should?!) jump to next iteration (next window)
+    % if beatIndicesWindow is empty jump to next iteration (next window)
     if(numel(beatIndicesWindow) == 0)
         continue;
     end
     
     %% prepare extraction
     % check number of beats in window; if too few, take last segment length
-    if(numel(beatIndicesWindow) > 3 && currentWindow > 1)
+    % (done implicitly as segmentLength etc is not deleted)
+    if(numel(beatIndicesWindow) > minBeatNumberWindow && currentWindow > 1)
         % get segment length
         segmentLength = diff(beatIndicesWindow); % calculate beat to beat differences
         segmentLength = ceil(median(segmentLength)); % get median segment length
         beatIntervalBefore = round(0.45*segmentLength); % beat interval before detection point
-        
-        %%%%%%% Changed this %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        %beatIntervalAfter = segmentLength; % beat interval after detection point
         beatIntervalAfter = max(diff(beatIndicesWindow)); % beat interval after detection point
-        %%%%%%% Changed this %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        
     elseif(currentWindow == 1)
         % initial segment length
         segmentLength = diff(beatIndicesWindow); % calculate beat to beat differences
         segmentLength = ceil(median(segmentLength)); % get median segment length
         beatIntervalBefore = round(0.45*segmentLength); % beat interval before detection point
-        
-        %%%%%%% Changed this %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        %beatIntervalAfter = segmentLength; % beat interval after detection point
         beatIntervalAfter = max(diff(beatIndicesWindow)); % beat interval after detection point
-        %%%%%%% Changed this %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        
     end
     
-    % remove incomplete beats --> TODO: what if
-    % only window is too short for loop?
+    % remove incomplete beats
     numInsertBefore = 0;
     numInsertAfter = 0;
     while(beatIndicesWindow(1)-beatIntervalBefore <= 0)%remove beats which occur too early
@@ -184,7 +202,6 @@ for currentWindow = 1:numWindows
         if(isempty(beatIndicesWindow)) % TODO: what if window is so short that intervalBefore longer than a window?
             % that way currentWindow above 1 could need rejection and
             % become empty
-            % TODO: return something
             break
         end
     end
@@ -192,7 +209,6 @@ for currentWindow = 1:numWindows
         beatIndicesWindow(end)=[];
         numInsertAfter = numInsertAfter + 1;
         if(isempty(beatIndicesWindow))
-            % TODO: return something
             break
         end
     end
@@ -211,10 +227,14 @@ for currentWindow = 1:numWindows
         currentBeat = singleBeatsWindow{beatNum};
         currentOverallBeat = currentOverallBeat + 1;
         
-        % catch nan beats (TODO: necessary?)
+        % catch nan beats
         if(isnan(currentBeat))
-            singleBeatsProcessedWindow{beatNumber} = currentBeat;
-            % TODO: need to fill other returned vars with nan
+            singleBeatsProcessedWindow{beatNum} = currentBeat;
+            importantPointsWindow(beatNum).trends = NaN;
+            importantPointsWindow(beatNum).beatStartIndex = NaN;
+            importantPointsWindow(beatNum).beatStopIndex = NaN;
+            importantPointsWindow(beatNum).detectionPoint = NaN;
+            importantPointsWindow(beatNum).borders = NaN;
             continue
         end
         
@@ -226,32 +246,48 @@ for currentWindow = 1:numWindows
         else
             beatStartIndex = 1; % use earliest sample if there are no minima
         end
-        clear minima minimaIndices % TODO: needed as the number of detected minima can vary between different beats?
+        clear minima minimaIndices
         
         % get ending minimum (end)
         endingSegment = currentBeat(beatIntervalBefore:end); % get second part of the beat
         [minima,minimaIndices] = findpeaks(-endingSegment); % get minima
-        
-        
-        %%%%%%% Changed this %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        % delete all minima after beatindex of next beat        
-        if(currentOverallBeat < numel(beatIndices))
+        if(currentOverallBeat < numel(beatIndices)) % delete all minima after beatindex of next beat  
             while(minimaIndices(end)+beatIndices(currentOverallBeat) > beatIndices(currentOverallBeat+1))
                 minimaIndices(end) = [];
                 minima(end) = [];
+                if(isempty(minimaIndices))
+                    break;
+                end
+            end
+        end     
+        if(~isempty(minima)) % delete all minima after maximum cardiac cycle duration
+            while(beatIntervalBefore + minimaIndices(end) - 1 > maxCardiacCycleNumBeats) 
+                minimaIndices(end) = [];
+                minima(end) = [];
+                if(isempty(minimaIndices))
+                    break;
+                end
             end
         end
-        %%%%%%% Changed this %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        
-        
-        if(~isempty(minima))
-            % TODO: sebastian uses first minimum
-            [~,index] = min(-minima);%take lowest minimum
-            beatStopIndex = beatIntervalBefore + minimaIndices(index) - 1; % -1 because beatInterval_before is already in endingSegment
-        else
-            beatStopIndex = length(currentBeat); % use last sample if there are no minima
+        if(~isempty(minima)) % delete all minima before minimum cardiac cycle duration
+            while(beatIntervalBefore + minimaIndices(1) - 1 < minCardiacCycleNumBeats) 
+                minimaIndices(1) = [];
+                minima(1) = [];
+                if(isempty(minimaIndices))
+                    break;
+                end
+            end
         end
-        clear minima minimaIndices % TODO:  needed as the number of detected minima can vary between different beats?
+        if(~isempty(minima))
+            beatStopIndex = beatIntervalBefore + minimaIndices(end) - 1; % -1 because beatInterval_before is already in endingSegment
+        else
+            if(length(currentBeat) < maxCardiacCycleNumBeats)
+                beatStopIndex = length(currentBeat); % use last sample if there are no minima
+            else
+                beatStopIndex = maxCardiacCycleNumBeats; % use maximum possible cardiac cycle length if there are no minima and currentBeat seems to be longer than possible
+            end
+        end
+        clear minima minimaIndices
         
         % detrend beat
         trenddata = interp1([beatStartIndex beatStopIndex],[currentBeat(beatStartIndex),currentBeat(beatStopIndex)], ...
@@ -270,22 +306,21 @@ for currentWindow = 1:numWindows
         singleBeatsProcessedWindow{beatNum} = currentBeat;
     end
     
-    % TODO: insert beats depending on current window if necessary
-    % TODO: add description
+    % insert beats depending on current window if necessary
     importantPointsInsert = struct;
     importantPointsInsert(1).trends = NaN;
     importantPointsInsert(1).beatStartIndex = NaN;
     importantPointsInsert(1).beatStopIndex = NaN;
     importantPointsInsert(1).detectionPoint = NaN;
     importantPointsInsert(1).borders = [NaN;NaN];
-    if(currentWindow==1 && numInsertBefore > 0)
+    if(currentWindow==1 && numInsertBefore > 0) % TODO: would be goo to be independent of currentWindow
         for insertion = 1:numInsertBefore
-            singleBeatsWindow = [{NaN},singleBeatsWindow];
+            singleBeatsWindow = [{NaN};singleBeatsWindow];
             singleBeatsProcessedWindow = [{NaN};singleBeatsProcessedWindow];
-            importantPointsWindow = [importantPointsInsert;importantPointsWindow];
+            importantPointsWindow = [importantPointsInsert,importantPointsWindow];
         end
     end
-    if((currentWindow==numWindows || currentWindow==numWindows-1) && numInsertAfter > 0)
+    if((currentWindow==numWindows || currentWindow==numWindows-1) && numInsertAfter > 0) % TODO: would be goo to be independent of currentWindow
         for insertion = 1:numInsertAfter
             singleBeatsWindow = [singleBeatsWindow;{NaN}];
             singleBeatsProcessedWindow = [singleBeatsProcessedWindow;{NaN}];
@@ -296,7 +331,6 @@ for currentWindow = 1:numWindows
     %% fuse windows to one output
     % concatenate everything
     % TODO: initialize before the loop?
-    % TODO: i do not take into account deleting beats at beginning and end
     singleBeatsProcessed = [singleBeatsProcessed;singleBeatsProcessedWindow];
     singleBeats = [singleBeats;singleBeatsWindow];
     importantPoints = [importantPoints,importantPointsWindow];
@@ -304,7 +338,7 @@ for currentWindow = 1:numWindows
     % clear window variables
     clear('singleBeatsProcessedWindow','singleBeatsWindow','importantPointsWindow');
     if(currentWindow==1)
-        importantPoints(1) = [];
+        importantPoints(1) = []; % delete initial important points that are only made for initialization
     end
 
 end
