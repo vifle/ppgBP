@@ -56,13 +56,15 @@ if(doDecomposition)
 
     % execute function that stores settings
     storeSettings(baseDatasetDir,settings);
-    settings = rmfield(settings,'Decomposition');
 
     % execute function
     decomposeRealData(baseDatasetDir,settings.Decomposition.toDir,settings.Decomposition.doExclusion, ...
         settings.Decomposition.algorithmsFile,settings.Decomposition.extractFullDataset,...
         settings.Decomposition.nrmseThreshold,settings.Decomposition.dataset, ...
         settings.Decomposition.extractPPGIsingles,settings.Decomposition.extractPPGIensemble)
+
+    % remove current settings
+    settings = rmfield(settings,'Decomposition');
     
 end
 
@@ -85,13 +87,15 @@ if(doDecomposition)
 
     % execute function that stores settings
     storeSettings(baseDatasetDir,settings);
-    settings = rmfield(settings,'Decomposition');
 
     % execute function
     decomposeRealData(baseDatasetDir,settings.Decomposition.toDir,settings.Decomposition.doExclusion, ...
         settings.Decomposition.algorithmsFile,settings.Decomposition.extractFullDataset,...
         settings.Decomposition.nrmseThreshold,settings.Decomposition.dataset, ...
         settings.Decomposition.extractPPGIsingles,settings.Decomposition.extractPPGIensemble)
+
+    % remove current settings
+    settings = rmfield(settings,'Decomposition');
     
 end
 
@@ -114,13 +118,15 @@ if(doDecomposition)
 
     % execute function that stores settings
     storeSettings(baseDatasetDir,settings);
-    settings = rmfield(settings,'Decomposition');
 
     % execute function
     decomposeRealData(baseDatasetDir,settings.Decomposition.toDir,settings.Decomposition.doExclusion, ...
         settings.Decomposition.algorithmsFile,settings.Decomposition.extractFullDataset,...
         settings.Decomposition.nrmseThreshold,settings.Decomposition.dataset, ...
         settings.Decomposition.extractPPGIsingles,settings.Decomposition.extractPPGIensemble)
+
+    % remove current settings
+    settings = rmfield(settings,'Decomposition');
     
 end
 
