@@ -1,4 +1,4 @@
-function [] = extractFeatures(baseDatasetDir,dirEnding,extractFullDataset,usePreviousResults,dataset,extractPPGI,extractPPGIensemble,metaDataFeatures)
+function [] = extractFeatures(baseDatasetDir,fromDir,toDir,extractFullDataset,usePreviousResults,dataset,extractPPGI,extractPPGIensemble,metaDataFeatures)
 %% TODO
 % important:
 % depending on number of kernels extract different number of features
@@ -51,9 +51,9 @@ load('algorithmsBPestimation.mat','algorithms');
 load('featuresExpanded.mat','features');
 % specify source, data and results folder
 if(extractFullDataset)
-    sourceFolder=['Datasets\' dataset '\realDataFULL\'];
-    resultsFolder=['Datasets\' dataset '\beatwiseFeaturesFULL_NOEX_2022_01_20\'];
-    dataFolder=['Datasets\' dataset '\decompositionBeatwiseFULL_NOEX_2021_08_04\'];
+    sourceFolder=[baseDatasetDir dataset '\realData\FULL\'];
+    resultsFolder=[baseDatasetDir dataset '\beatwiseFeaturesFULL_NOEX_2022_01_20\'];
+    dataFolder=[baseDatasetDir dataset '\decompositionBeatwiseFULL_NOEX_2021_08_04\'];
 else
     sourceFolder=['Datasets\' dataset '\realDataSUBSET\'];
     resultsFolder=['Datasets\' dataset '\beatwiseFeaturesSUBSET_NOEX_2022_01_20\'];

@@ -13,10 +13,8 @@ clc
 % what about "load algorithms" Befehle?
 
 % finales Abspeichern der Daten anders machen --> sodass nicht einfach
-% überschrieben wird
-
-% train und test models abspeichern lassen, welche läufe von decompose und
-% extract features genutzt wurden (csv datei oder mat file)
+% überschrieben wird --> check durchführen, ob da was existiert und wenn
+% nicht "überschreiben" angewählt ist, Order
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -54,6 +52,7 @@ if(doDecomposition)
 
     % execute function that stores settings
     storeSettings(baseDatasetDir,settings);
+    settings = rmfield(settings,'Decomposition');
 
     % execute function
     decomposeRealData(baseDatasetDir,settings.Decomposition.toDir, ...
@@ -65,25 +64,27 @@ end
 %% extractFeatures
 if(doFeatureExtraction)
     % settings
-    extractFullDataset = false;
-    usePreviousResults = false;
-    dataset ='CPT';
-    extractPPGI = false;
-    extractPPGIensemble = true;
-    % metaDataFeatures = {'ID';'Beat';'Sex';'Age';'Height';'Weight';'SBP';'DBP';'PP';'TPR'}; % add RR
-    metaDataFeatures = {'ID';'Beat';'Sex';'Age';'Height';'Weight';'SBP';'DBP';'PP'}; % add RR % add epoch?
+    settings.Features.extractFullDataset = false;
+    settings.Features.usePreviousResults = false;
+    settings.Features.dataset ='CPT';
+    settings.Features.extractPPGI = false;
+    settings.Features.extractPPGIensemble = true;
+    % settings.Features.metaDataFeatures = {'ID';'Beat';'Sex';'Age';'Height';'Weight';'SBP';'DBP';'PP';'TPR'}; % add RR
+    settings.Features.metaDataFeatures = {'ID';'Beat';'Sex';'Age';'Height';'Weight';'SBP';'DBP';'PP'}; % add RR % add epoch?
 
     % dirs
-    fromDir = ''; % ending of dir from which data should be used as input
-    toDir = ''; % ending of dir to which data will be saved
-    % function that reads input dir for a file that contains information on
-    % which data is used for calculation and takes this information and adds
-    % new information from this section here
+    settings.Features.fromDir = '2022_02_17'; % ending of dir from which data should be used as input
+    settings.Features.toDir = '2022_02_17'; % ending of dir to which data will be saved
+
+    % execute function that stores settings
+    storeSettings(baseDatasetDir,settings);
+    settings = rmfield(settings,'Features');
 
     % execute function
-    extractFeatures(baseDatasetDir,dirEnding,extractFullDataset,...
-        usePreviousResults,dataset,extractPPGI,extractPPGIensemble,...
-        metaDataFeatures)
+    extractFeatures(baseDatasetDir,settings.Features.fromDir,settings.Features.toDir, ...
+        settings.Features.extractFullDataset,settings.Features.usePreviousResults, ...
+        settings.Features.dataset,settings.Features.extractPPGI, ...
+        settings.Features.extractPPGIensemble,settings.Features.metaDataFeatures)
 end
 
 %% trainModels

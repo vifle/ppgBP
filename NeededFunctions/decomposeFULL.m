@@ -12,7 +12,7 @@ numPatients = size(patients,1);
 numAlgs = size(algorithms,1);
 
 parfor actualPatientNumber=1:numPatients
-%for actualPatientNumber=numPatients:numPatients
+    %for actualPatientNumber=1:numPatients
     if(exist([sourceFolder,patients{actualPatientNumber},'.mat'],'file') ~= 2)
         continue
     end
@@ -36,21 +36,39 @@ parfor actualPatientNumber=1:numPatients
     end
     for actualAlgorithm = 1:numAlgs
         %% decomposition, reconstruction and calculation of NRMSE
-        
+
         % decompose algorithm name
         [kernelTypeMethod,numKernelsString] = split(algorithms{actualAlgorithm},{'2','3','4','5'});
         kernelTypes = kernelTypeMethod{1};
         numKernels = str2double(numKernelsString);
         initialValueMethod = kernelTypeMethod{2};
-        
+
+        % skip if result already exists
+        if(exist([resultsFolder,patients{actualPatientNumber},'\', ...
+                [kernelTypes,num2str(numKernels),initialValueMethod],'.mat'],'file') == 2)
+            disp('results already exist')
+            continue
+        end
+
         decompositionResults = struct;
         numBeats = size(beatIndices,1);
         for beatNumber = 1:numBeats
-%             disp(actualPatientNumber);
-%             disp(actualAlgorithm);
-%             disp(beatNumber);
+            %             disp(actualPatientNumber);
+            %             disp(actualAlgorithm);
+            %             disp(beatNumber);
             if(iscell(singleBeats))
-                decompositionResults(beatNumber).singleBeats = singleBeats{beatNumber};
+                if(isnan(singleBeats{beatNumber}))
+                    decompositionResults(beatNumber).singleBeats = NaN;
+                    decompositionResults(beatNumber).nrmse = NaN;
+                    decompositionResults(beatNumber).signal_mod = NaN;
+                    decompositionResults(beatNumber).y = cell(3,1);
+                    decompositionResults(beatNumber).opt_params = NaN;
+                    decompositionResults(beatNumber).numDecompositions = 0;
+                    decompositionResults(beatNumber).error = 0; % beat was too short and is thus set nan in createSingleBeats
+                    continue
+                else
+                    decompositionResults(beatNumber).singleBeats = singleBeats{beatNumber};
+                end
                 % TODO: singleBeats can be smaller than number of beats
                 % insert nan for exclusions in while loop?
                 % how was this handled before?
@@ -62,7 +80,7 @@ parfor actualPatientNumber=1:numPatients
                 decompositionResults(beatNumber).opt_params = NaN;
                 decompositionResults(beatNumber).numDecompositions = 0;
                 decompositionResults(beatNumber).error = 1;
-                continue      
+                continue
             else
                 decompositionResults(beatNumber).singleBeats = NaN;
                 decompositionResults(beatNumber).nrmse = NaN;
@@ -71,9 +89,9 @@ parfor actualPatientNumber=1:numPatients
                 decompositionResults(beatNumber).opt_params = NaN;
                 decompositionResults(beatNumber).numDecompositions = 0;
                 decompositionResults(beatNumber).error = 2;
-                continue 
+                continue
             end
-            
+
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % TODO: is this solved?
             % check here if the beat has more than one peak?
@@ -83,8 +101,7 @@ parfor actualPatientNumber=1:numPatients
             % measurement error; also should observe full time series -->
             % can these 1 peak pulses be seen in the BP measurement as
             % well?
-            numPeaks = numel(findpeaks(singleBeats{beatNumber}));
-            if(numPeaks > 1 || ~(doExclusion))
+            if(~(doExclusion))
                 try
                     [nrmse,signal_mod,y,opt_params] = calculateNRMSE(singleBeats{beatNumber}, ...
                         singleBeats{beatNumber},samplingFreq,'normalizeOutput',true,...
@@ -104,54 +121,77 @@ parfor actualPatientNumber=1:numPatients
                     decompositionResults(beatNumber).numDecompositions = 1;
                     decompositionResults(beatNumber).error = 3;
                 end
-                
-                % second try goes here with refined starting parameters
-                if(decompositionResults(beatNumber).nrmse < nrmseThreshold && doExclusion)
-                    % try decomposition with refined initial values
+            else
+                numPeaks = numel(findpeaks(singleBeats{beatNumber}));
+                if(numPeaks > 1 || ~(doExclusion))
                     try
-                        [nrmse,signal_mod,y,opt_params] = ...
-                            calculateNRMSE(singleBeats{beatNumber},singleBeats{beatNumber},samplingFreq, ...
-                            'InitialValues',opt_params,'normalizeOutput',true, ...
+                        [nrmse,signal_mod,y,opt_params] = calculateNRMSE(singleBeats{beatNumber}, ...
+                            singleBeats{beatNumber},samplingFreq,'normalizeOutput',true,...
                             'kernelTypes',kernelTypes,'numKernels',numKernels,...
                             'method',initialValueMethod);
+                        decompositionResults(beatNumber).nrmse = nrmse;
+                        decompositionResults(beatNumber).signal_mod = signal_mod;
+                        decompositionResults(beatNumber).y = y;
+                        decompositionResults(beatNumber).opt_params = opt_params;
+                        decompositionResults(beatNumber).numDecompositions = 1;
+                        decompositionResults(beatNumber).error = 0;
                     catch
                         decompositionResults(beatNumber).nrmse = NaN;
                         decompositionResults(beatNumber).signal_mod = NaN;
                         decompositionResults(beatNumber).y = cell(3,1);
                         decompositionResults(beatNumber).opt_params = NaN;
                         decompositionResults(beatNumber).numDecompositions = 1;
-                        decompositionResults(beatNumber).error = 4;
+                        decompositionResults(beatNumber).error = 3;
                     end
-                    % check if result is better than threshold
-                    if(nrmse < nrmseThreshold)
-                        % exclude beat if nrmse is too low
-                        decompositionResults(beatNumber).nrmse = NaN;
-                        decompositionResults(beatNumber).signal_mod = NaN;
-                        decompositionResults(beatNumber).y = cell(3,1);
-                        decompositionResults(beatNumber).opt_params = NaN;
-                        decompositionResults(beatNumber).numDecompositions = 2;
-                        decompositionResults(beatNumber).error = 0;
-                    else
-                        decompositionResults(beatNumber).nrmse = nrmse;
-                        decompositionResults(beatNumber).signal_mod = signal_mod;
-                        decompositionResults(beatNumber).y = y;
-                        decompositionResults(beatNumber).opt_params = opt_params;
-                        decompositionResults(beatNumber).numDecompositions = 2;
-                        decompositionResults(beatNumber).error = 0;
+
+                    % second try goes here with refined starting parameters
+                    if(decompositionResults(beatNumber).nrmse < nrmseThreshold && doExclusion)
+                        % try decomposition with refined initial values
+                        try
+                            [nrmse,signal_mod,y,opt_params] = ...
+                                calculateNRMSE(singleBeats{beatNumber},singleBeats{beatNumber},samplingFreq, ...
+                                'InitialValues',opt_params,'normalizeOutput',true, ...
+                                'kernelTypes',kernelTypes,'numKernels',numKernels,...
+                                'method',initialValueMethod);
+                        catch
+                            decompositionResults(beatNumber).nrmse = NaN;
+                            decompositionResults(beatNumber).signal_mod = NaN;
+                            decompositionResults(beatNumber).y = cell(3,1);
+                            decompositionResults(beatNumber).opt_params = NaN;
+                            decompositionResults(beatNumber).numDecompositions = 1;
+                            decompositionResults(beatNumber).error = 4;
+                        end
+                        % check if result is better than threshold
+                        if(nrmse < nrmseThreshold)
+                            % exclude beat if nrmse is too low
+                            decompositionResults(beatNumber).nrmse = NaN;
+                            decompositionResults(beatNumber).signal_mod = NaN;
+                            decompositionResults(beatNumber).y = cell(3,1);
+                            decompositionResults(beatNumber).opt_params = NaN;
+                            decompositionResults(beatNumber).numDecompositions = 2;
+                            decompositionResults(beatNumber).error = 0;
+                        else
+                            decompositionResults(beatNumber).nrmse = nrmse;
+                            decompositionResults(beatNumber).signal_mod = signal_mod;
+                            decompositionResults(beatNumber).y = y;
+                            decompositionResults(beatNumber).opt_params = opt_params;
+                            decompositionResults(beatNumber).numDecompositions = 2;
+                            decompositionResults(beatNumber).error = 0;
+                        end
                     end
+                else
+                    decompositionResults(beatNumber).nrmse = NaN;
+                    decompositionResults(beatNumber).signal_mod = NaN;
+                    decompositionResults(beatNumber).y = cell(3,1);
+                    decompositionResults(beatNumber).opt_params = NaN;
+                    decompositionResults(beatNumber).numDecompositions = 0;
+                    decompositionResults(beatNumber).error = 5;
                 end
-            else
-                decompositionResults(beatNumber).nrmse = NaN;
-                decompositionResults(beatNumber).signal_mod = NaN;
-                decompositionResults(beatNumber).y = cell(3,1);
-                decompositionResults(beatNumber).opt_params = NaN;
-                decompositionResults(beatNumber).numDecompositions = 0;
-                decompositionResults(beatNumber).error = 5;
             end
         end
-        
+
         numExclusions(actualPatientNumber,actualAlgorithm) = numel(find(isnan([decompositionResults.nrmse])));
-        
+
         if(exist([resultsFolder,patients{actualPatientNumber},'\'],'dir')~=7)
             mkdir([resultsFolder,patients{actualPatientNumber},'\'])
         end

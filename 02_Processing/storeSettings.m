@@ -39,7 +39,10 @@ function [] = storeSettings(baseDatasetDir,settings)
     
     % append new settings if old ones exist
     if(exist('oldSettings','var')==1)
-        % combine newSettings and oldSettings to settings
+        oldSettingsFields = fieldnames(oldSettings);
+        for currentSetting = 1:numel(oldSettingsFields)
+            settings.(oldSettingsFields{currentSetting}) = oldSettings.(oldSettingsFields{currentSetting});
+        end
     end
     
     % save settings

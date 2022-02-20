@@ -134,9 +134,9 @@ minBeatNumberWindow = 3; % assumed minimum number of beats in a window
 
 %% derived from assumptions
 minCardiacCycleTime = 1/(maxHeartRate/60); % minimum duration of a cardiac cycle in s
-minCardiacCycleNumBeats = minCardiacCycleTime*sampFreq; % minimum number of beats of a cardiac cycle
+minCardiacCycleNumBeats = floor(minCardiacCycleTime*sampFreq); % minimum number of beats of a cardiac cycle
 maxCardiacCycleTime = 1/(minHeartRate/60); % maximum duration of a cardiac cycle in s
-maxCardiacCycleNumBeats = maxCardiacCycleTime*sampFreq; % maximum number of beats of a cardiac cycle
+maxCardiacCycleNumBeats = floor(maxCardiacCycleTime*sampFreq); % maximum number of beats of a cardiac cycle
 
 %% do windowing
 % get window length(s)
@@ -199,6 +199,7 @@ for currentWindow = 1:numWindows
     while(beatIndicesWindow(1)-beatIntervalBefore <= 0)%remove beats which occur too early
         beatIndicesWindow(1)=[];
         numInsertBefore = numInsertBefore + 1;
+        currentOverallBeat = currentOverallBeat + 1;
         if(isempty(beatIndicesWindow)) % TODO: what if window is so short that intervalBefore longer than a window?
             % that way currentWindow above 1 could need rejection and
             % become empty
