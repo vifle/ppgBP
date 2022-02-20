@@ -253,11 +253,13 @@ for currentWindow = 1:numWindows
         endingSegment = currentBeat(beatIntervalBefore:end); % get second part of the beat
         [minima,minimaIndices] = findpeaks(-endingSegment); % get minima
         if(currentOverallBeat < numel(beatIndices)) % delete all minima after beatindex of next beat  
-            while(minimaIndices(end)+beatIndices(currentOverallBeat) > beatIndices(currentOverallBeat+1))
-                minimaIndices(end) = [];
-                minima(end) = [];
-                if(isempty(minimaIndices))
-                    break;
+            if(~isempty(minima)) % delete all minima after maximum cardiac cycle duration
+                while(minimaIndices(end)+beatIndices(currentOverallBeat) > beatIndices(currentOverallBeat+1))
+                    minimaIndices(end) = [];
+                    minima(end) = [];
+                    if(isempty(minimaIndices))
+                        break;
+                    end
                 end
             end
         end     

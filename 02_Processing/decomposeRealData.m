@@ -1,4 +1,4 @@
-function [] = decomposeRealData(baseDatasetDir,toDir,doExclusion,extractFullDataset,nrmseThreshold,dataset)
+function [] = decomposeRealData(baseDatasetDir,toDir,doExclusion,algorithmsFile,extractFullDataset,nrmseThreshold,dataset,extractPPGIsingles,extractPPGIensemble)
 
 %% TODO
 % consider class 3/4 beats in exclusions
@@ -12,7 +12,12 @@ addpath('..\NeededFunctions');
 % add path to decomposition functions and cell with algorithm names
 addpath('..\Algorithms');
 % load file containing algorithms here
-load('algorithmsBPestimation.mat','algorithms');
+if(exist([algorithmsFile '.mat'],'file') == 2)
+    load([algorithmsFile '.mat'],'algorithms');
+else
+    errordlg('Specified algorithmsFile does not exist.')
+    return
+end
 
 % initialize kernel characteristics
 algorithmsStruct(size(algorithms,1)) = struct();
@@ -41,6 +46,6 @@ patients=physiologicalMeasuresTable.SubjectID; % loads list with patients
 if(extractFullDataset)
     decomposeFULL(sourceFolder,resultsFolder,patients,algorithms,doExclusion,nrmseThreshold);
 else
-    decomposeSUBSET(sourceFolder,resultsFolder,epochs,patients,algorithms,doExclusion,nrmseThreshold);
+    decomposeSUBSET(sourceFolder,resultsFolder,epochs,patients,algorithms,doExclusion,nrmseThreshold,extractPPGIsingles,extractPPGIensemble);
 end
 end

@@ -1,4 +1,4 @@
-function [] = extractFeatures(baseDatasetDir,fromDir,toDir,extractFullDataset,usePreviousResults,dataset,extractPPGI,extractPPGIensemble,metaDataFeatures)
+function [] = extractFeatures(baseDatasetDir,fromDir,toDir,extractFullDataset,usePreviousResults,dataset,dataClass,metaDataFeatures)
 %% TODO
 % important:
 % depending on number of kernels extract different number of features
@@ -46,19 +46,23 @@ addpath('..\Features\secondDerivative');
 addpath('..\Features\statistical');
 addpath('..\Features\frequency');
 % load file containing algorithms here
-load('algorithmsBPestimation.mat','algorithms');
+load('algorithmsBPestimationTEST.mat','algorithms');
 % load file containing features here
 load('featuresExpanded.mat','features');
 % specify source, data and results folder
 if(extractFullDataset)
+    if(~strcmp(dataClass,'ppg'))
+        errordlg('Invalid dataClass for feature extraction of full dataset. Only ppg possible.')
+        return
+    end
     sourceFolder=[baseDatasetDir dataset '\realData\FULL\'];
-    resultsFolder=[baseDatasetDir dataset '\beatwiseFeaturesFULL_NOEX_2022_01_20\'];
-    dataFolder=[baseDatasetDir dataset '\decompositionBeatwiseFULL_NOEX_2021_08_04\'];
+    resultsFolder=[baseDatasetDir dataset '\Features\FULL\' toDir '\'];
+    dataFolder=[baseDatasetDir dataset '\Decomposition\FULL' fromDir '\'];
 else
-    sourceFolder=['Datasets\' dataset '\realDataSUBSET\'];
-    resultsFolder=['Datasets\' dataset '\beatwiseFeaturesSUBSET_NOEX_2022_01_20\'];
-    dataFolder=['Datasets\' dataset '\decompositionBeatwiseSUBSET_NOEX_2022_01_05\'];
-    epochFile = load(['Datasets\' dataset '\epochs.mat']);
+    sourceFolder=[baseDatasetDir dataset '\realData\SUBSET\'];
+    resultsFolder=[baseDatasetDir dataset '\Features\SUBSET\' toDir '\'];
+    dataFolder=[baseDatasetDir dataset '\Decomposition\SUBSET\' fromDir '\'];
+    epochFile = load([baseDatasetDir dataset '\measurements\epochs.mat']);
 end
 % load data information
 load([sourceFolder 'physiologicalMeasuresTable.mat']);
@@ -102,10 +106,15 @@ featureTypes(:) = {'double'};
 numCols = numel(metaDataFeatures) + size(features,1); % metaData features + features for prediction
 numRows = 0;
 for actualSubject = 1:size(patients,1)
-    if(extractPPGIensemble && ~extractPPGI)
+    if(strcmp(dataClass,'ppgiEnsemble'))
         numBeats = 1;
-    else
+    elseif(strcmp(dataClass,'ppgiSingles'))
         numBeats = size(physiologicalMeasuresTable.SBP(actualSubject).values,1);
+    elseif(strcmp(dataClass,'ppg'))
+        numBeats = size(physiologicalMeasuresTable.SBP(actualSubject).values,1);
+    else
+        errordlg('Invalid dataClass argument chosen.')
+        return
     end
     numRows = numRows + numBeats;
     beatsRemaining(actualSubject,:) = {numBeats};
@@ -192,11 +201,11 @@ parfor actualAlgorithm = 1:numAlg
         else
             beatNumber = 0;
             for currentInterval = 1:size(epochFile.epochs,1)
-                if(extractPPGI && ~extractPPGIensemble)
+                if(strcmp(dataClass,'ppgiSingles'))
                     currentFilePath = [dataFolder patients{actualSubject} '\' epochFile.epochs{currentInterval} '\' algorithms{actualAlgorithm} '_ppgi.mat'];
-                elseif(extractPPGIensemble && ~extractPPGI)
+                elseif(strcmp(dataClass,'ppgiEnsemble'))
                     currentFilePath = [dataFolder patients{actualSubject} '\' epochFile.epochs{currentInterval} '\' algorithms{actualAlgorithm} '_ensembleBeat.mat'];
-                elseif((~extractPPGI && ~extractPPGIensemble) || (extractPPGI && extractPPGIensemble))
+                elseif(strcmp(dataClass,'ppg'))
                     currentFilePath = [dataFolder patients{actualSubject} '\' epochFile.epochs{currentInterval} '\' algorithms{actualAlgorithm} '.mat'];
                 end
                 
@@ -220,7 +229,7 @@ parfor actualAlgorithm = 1:numAlg
                         featureTableLong.Height(i,1) = physiologicalMeasuresTable.Height_cm_(actualSubject);
                         featureTableLong.Weight(i,1) = physiologicalMeasuresTable.Weight_kg_(actualSubject);
                         % get features from reference
-                        if(extractPPGIensemble && ~extractPPGI)
+                        if(strcmp(dataClass,'ppgiEnsemble'))
                             idx = find(strcmp(physiologicalMeasuresTable.SBP(actualSubject).epochs, epochFile.epochs{currentInterval}));
                             featureTableLong.SBP(i,1) = median(physiologicalMeasuresTable.SBP(actualSubject).values(idx));
                             featureTableLong.DBP(i,1) = median(physiologicalMeasuresTable.DBP(actualSubject).values(idx));
@@ -296,11 +305,11 @@ exclusionsExtraction = array2table(exclusionsExtraction,'VariableNames',algorith
 if(exist(resultsFolder,'dir')~=7)
     mkdir(resultsFolder)
 end
-if(extractPPGI && ~extractPPGIensemble)
+if(strcmp(dataClass,'ppgiSingles'))
     save([resultsFolder 'tableCollection_ppgi.mat'],'tableCollection','numExclusions','exclusionsExtraction','beatsRemaining','-v7.3');
-elseif(extractPPGIensemble && ~extractPPGI)
+elseif(strcmp(dataClass,'ppgiEnsemble'))
     save([resultsFolder 'tableCollection_ensembleBeat.mat'],'tableCollection','numExclusions','exclusionsExtraction','beatsRemaining','-v7.3');
-elseif((~extractPPGI && ~extractPPGIensemble) || (extractPPGI && extractPPGIensemble))
+elseif(strcmp(dataClass,'ppg'))
     save([resultsFolder 'tableCollection.mat'],'tableCollection','numExclusions','exclusionsExtraction','beatsRemaining','-v7.3');
 end
 end

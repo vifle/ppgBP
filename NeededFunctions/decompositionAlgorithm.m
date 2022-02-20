@@ -64,6 +64,9 @@ function [signal_mod,y,opt_val_sort] = decompositionAlgorithm(ppg_signal,freq,va
 %                   type: 1 x (3*numKernels) array of doubles
 
 %% TODO
+% - add possibility to work with non-detrended signal
+%   --> check if beat is from zero to zero and assume linear trend and save
+%   that trend; make this at least optional?
 % - add examples?
 % - adapt old testing environment to this new structure
 % - improve returning to outer script after error
