@@ -197,8 +197,8 @@ if(doTesting)
     modelTypes = {'RandomForest'};
     %modelTypes = {'LinearMixedModel';'LinearModel';'RandomForest'};
     mixDatasets = true;
-    intraSubjectMix = true;
-    includePPGI = true;
+    intraSubjectMix = false;
+    includePPGI = false;
     if(mixDatasets)
         set = 'CPTFULL_PPG_BPSUBSET';
     else

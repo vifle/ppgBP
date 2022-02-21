@@ -84,8 +84,28 @@ for actualAlgorithm = 1:size(algorithms,1)
                     mean(evaluationResults.(modelTypes{actualModelType}).prediction-evaluationResults.(modelTypes{actualModelType}).groundTruth,'omitnan'); % mean error
                 evaluationResults.(modelTypes{actualModelType}).SD = ...
                     std(evaluationResults.(modelTypes{actualModelType}).prediction-evaluationResults.(modelTypes{actualModelType}).groundTruth,'omitnan'); % standard deviation of error
-                evaluationResults.(modelTypes{actualModelType}).r = ...
-                    corr(evaluationResults.(modelTypes{actualModelType}).prediction,evaluationResults.(modelTypes{actualModelType}).groundTruth,'Rows','complete'); % correlation coefficient
+                evaluationResults.(modelTypes{actualModelType}).rPearson = ...
+                    corr(evaluationResults.(modelTypes{actualModelType}).prediction,evaluationResults.(modelTypes{actualModelType}).groundTruth,'Type','Pearson','Rows','complete'); % correlation coefficient (Pearson)
+                evaluationResults.(modelTypes{actualModelType}).rSpearman = ...
+                    corr(evaluationResults.(modelTypes{actualModelType}).prediction,evaluationResults.(modelTypes{actualModelType}).groundTruth,'Type','Spearman','Rows','complete'); % correlation coefficient (Spearman)
+                % evaluation measures - r for each subject
+                idArray = evaluationResults.testTable.ID; % get array of IDs
+                uniqueID = unique(evaluationResults.testTable.ID); % get all unique IDs
+                matrixTemplate = zeros(numel(uniqueID),3);
+                corrTable = array2table(matrixTemplate,'VariableNames',{'ID','CorrPearson','CorrSpearman'}); % turn matrix to table
+                corrTable.ID = nominal(corrTable.ID);
+                for currentID = 1:numel(uniqueID)
+                    idxID = find(idArray==uniqueID(currentID));
+                    corrTable.ID(currentID) = uniqueID(currentID);
+                    corrTable.CorrPearson(currentID) = corr(evaluationResults.(modelTypes{actualModelType}).prediction(idxID), ...
+                        evaluationResults.(modelTypes{actualModelType}).groundTruth(idxID), ...
+                        'Type','Pearson','Rows','complete'); % correlation coefficient (Pearson) per subject
+                    corrTable.CorrSpearman(currentID) = corr(evaluationResults.(modelTypes{actualModelType}).prediction(idxID), ...
+                        evaluationResults.(modelTypes{actualModelType}).groundTruth(idxID), ...
+                        'Type','Spearman','Rows','complete'); % correlation coefficient (Spearman) per subject
+                end
+                evaluationResults.(modelTypes{actualModelType}).corrTable = corrTable; % correlation per subject
+
             else
                 models = fieldnames(modelResults.(modelTypes{actualModelType}));
                 for actualModel = 1:numel(models)
@@ -106,8 +126,28 @@ for actualAlgorithm = 1:size(algorithms,1)
                         mean(evaluationResults.(modelTypes{actualModelType})(actualModel).prediction-evaluationResults.(modelTypes{actualModelType})(actualModel).groundTruth,'omitnan'); % mean error
                     evaluationResults.(modelTypes{actualModelType})(actualModel).SD = ...
                         std(evaluationResults.(modelTypes{actualModelType})(actualModel).prediction-evaluationResults.(modelTypes{actualModelType})(actualModel).groundTruth,'omitnan'); % standard deviation of error
-                    evaluationResults.(modelTypes{actualModelType})(actualModel).r = ...
-                        corr(evaluationResults.(modelTypes{actualModelType})(actualModel).prediction,evaluationResults.(modelTypes{actualModelType})(actualModel).groundTruth,'Rows','complete'); % correlation coefficient
+                    evaluationResults.(modelTypes{actualModelType})(actualModel).rPearson = ...
+                        corr(evaluationResults.(modelTypes{actualModelType})(actualModel).prediction,evaluationResults.(modelTypes{actualModelType})(actualModel).groundTruth,'Type','Pearson','Rows','complete'); % correlation coefficient (Pearson)
+                    evaluationResults.(modelTypes{actualModelType})(actualModel).rSpearman = ...
+                        corr(evaluationResults.(modelTypes{actualModelType})(actualModel).prediction,evaluationResults.(modelTypes{actualModelType})(actualModel).groundTruth,'Type','Spearman','Rows','complete'); % correlation coefficient (Spearman)
+                    % evaluation measures - r for each subject
+                    idArray = evaluationResults.testTable.ID; % get array of IDs
+                    uniqueID = unique(evaluationResults.testTable.ID); % get all unique IDs
+                    matrixTemplate = zeros(numel(uniqueID),3);
+                    corrTable = array2table(matrixTemplate,'VariableNames',{'ID','CorrPearson','CorrSpearman'}); % turn matrix to table
+                    corrTable.ID = nominal(corrTable.ID);
+                    for currentID = 1:numel(uniqueID)
+                        idxID = find(idArray==uniqueID(currentID));
+                        corrTable.ID(currentID) = uniqueID(currentID);
+                        corrTable.CorrPearson(currentID) = corr(evaluationResults.(modelTypes{actualModelType})(actualModel).prediction(idxID), ...
+                            evaluationResults.(modelTypes{actualModelType})(actualModel).groundTruth(idxID), ...
+                            'Type','Pearson','Rows','complete'); % correlation coefficient (Pearson) per subject
+                        corrTable.CorrSpearman(currentID) = corr(evaluationResults.(modelTypes{actualModelType})(actualModel).prediction(idxID), ...
+                            evaluationResults.(modelTypes{actualModelType})(actualModel).groundTruth(idxID), ...
+                            'Type','Spearman','Rows','complete'); % correlation coefficient (Spearman) per subject
+                    end
+                    evaluationResults.(modelTypes{actualModelType})(actualModel).corrTable = corrTable; % correlation per subject
+                    % feature importance
                     if(strcmp(modelTypes{actualModelType},'RandomForest'))
                         evaluationResults.(modelTypes{actualModelType})(actualModel).imp = predictorImportance(modelResults.(modelTypes{actualModelType}).(models{actualModel})); % feature importance
                     end
@@ -303,6 +343,12 @@ for actualAlgorithm = 1:size(algorithms,1)
                     std(evaluationResults.(modelTypes{actualModelType})(actualModel).prediction-evaluationResults.(modelTypes{actualModelType})(actualModel).groundTruth,'omitnan'); % standard deviation of error
                 evaluationResults.(modelTypes{actualModelType})(actualModel).r = ...
                     corr(evaluationResults.(modelTypes{actualModelType})(actualModel).prediction,evaluationResults.(modelTypes{actualModelType})(actualModel).groundTruth,'Rows','complete'); % correlation coefficient
+                
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                % TODO: Spearman, r for single subjects, feature importance
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
             end
         end
         % save evaluation results
