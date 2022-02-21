@@ -20,9 +20,9 @@ clc
 
 %% choose steps to be executed
 doDecomposition = false;
-doFeatureExtraction = true;
+doFeatureExtraction = false;
 doTraining = false;
-doTesting = false;
+doTesting = true;
 
 %% get path to datasets
 if(strcmp(getenv('username'),'vince'))
@@ -137,11 +137,11 @@ if(doFeatureExtraction)
     % settings
     settings.Features.extractFullDataset = false;
     settings.Features.usePreviousResults = false;
-    settings.Features.dataset ='PPG_BP';
+    settings.Features.dataset ='CPT';
     % settings.Features.metaDataFeatures = {'ID';'Beat';'Sex';'Age';'Height';'Weight';'SBP';'DBP';'PP';'TPR'}; % add RR
     settings.Features.metaDataFeatures = {'ID';'Beat';'Sex';'Age';'Height';'Weight';'SBP';'DBP';'PP'}; % add RR % add epoch?
     % settings only for subset
-    settings.Features.dataClass ='ppg'; % ppg, ppgiSingles, ppgiEnsemble
+    settings.Features.dataClass ='ppgiEnsemble'; % ppg, ppgiSingles, ppgiEnsemble
 
     % dirs
     settings.Features.fromDir = '2022_02_20'; % ending of dir from which data should be used as input
@@ -167,7 +167,7 @@ if(doTraining)
     intraSubjectMix = true; % Bedeutung: Zufälliges Ziehen aus allen Schlägen
     mixHu = true; % Bedeutung: Zufääligen Ziehen aus allen Schlägen eines Probanden
     includePPGI = true;
-    PPGIdir = 'beatwiseFeaturesSUBSET_NOEX_2022_01_20\';
+    PPGIdir = 'Features\SUBSET\2022_02_20\';
     % modelTypes = {'LinearMixedModel','LinearMixedModel'; ...
     %     'LinearModel','LinearModel';...
     %     'RandomForest','classreg.learning.regr.RegressionEnsemble'};
@@ -181,14 +181,11 @@ if(doTraining)
     end
 
     % dirs
-    fromDir = '2022_02_02'; % ending of dir from which data should be used as input
-    toDir = '2022_02_02'; % ending of dir to which data will be saved
-    % function that reads input dir for a file that contains information on
-    % which data is used for calculation and takes this information and adds
-    % new information from this section here
+    fromDir = '2022_02_20'; % ending of dir from which data should be used as input
+    toDir = '2022_02_20'; % ending of dir to which data will be saved
 
     % execute function
-    trainModels(baseDatasetDir,dirEnding,mixDatasets,intraSubjectMix,mixHu,...
+    trainModels(baseDatasetDir,fromDir,toDir,mixDatasets,intraSubjectMix,mixHu,...
         includePPGI,PPGIdir,modelTypes,portionTraining,dataset)
 end
 
@@ -200,8 +197,8 @@ if(doTesting)
     modelTypes = {'RandomForest'};
     %modelTypes = {'LinearMixedModel';'LinearModel';'RandomForest'};
     mixDatasets = true;
-    intraSubjectMix = false;
-    includePPGI = false;
+    intraSubjectMix = true;
+    includePPGI = true;
     if(mixDatasets)
         set = 'CPTFULL_PPG_BPSUBSET';
     else
@@ -211,13 +208,10 @@ if(doTesting)
     end
 
     % dirs
-    fromDir = '2022_02_02'; % ending of dir from which data should be used as input
-    toDir = '2022_02_02'; % ending of dir to which data will be saved
-    % function that reads input dir for a file that contains information on
-    % which data is used for calculation and takes this information and adds
-    % new information from this section here
+    fromDir = '2022_02_20'; % ending of dir from which data should be used as input
+    toDir = '2022_02_20'; % ending of dir to which data will be saved
 
     % execute function
-    testModels(baseDatasetDir,dirEnding,doDummyError,doVisualization,...
+    testModels(baseDatasetDir,fromDir,toDir,doDummyError,doVisualization,...
         modelTypes,mixDatasets,intraSubjectMix,includePPGI,set)
 end

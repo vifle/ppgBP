@@ -1,4 +1,4 @@
-function [] = trainModels(baseDatasetDir,dirEnding,mixDatasets,intraSubjectMix,mixHu,includePPGI,PPGIdir,modelTypes,portionTraining,dataset)
+function [] = trainModels(baseDatasetDir,fromDir,toDir,mixDatasets,intraSubjectMix,mixHu,includePPGI,PPGIdir,modelTypes,portionTraining,dataset)
 %% TODO
 % Namen der Tabelle überarbeiten und an andere Daten anpassen
 % wie gut ist varianz erklärt? R^2 ansehen
@@ -46,7 +46,7 @@ addpath('..\Features\secondDerivative');
 addpath('..\Features\statistical');
 addpath('..\Features\frequency');
 % load file containing algorithms here
-load('algorithmsBPestimation.mat','algorithms');
+load('algorithmsBPestimationTEST.mat','algorithms');
 %load('algorithmsBPestimation3Kernels.mat','algorithms');
 
 if(mixDatasets)
@@ -55,7 +55,7 @@ if(mixDatasets)
 end
 for currentDataset = 1:size(dataset,1)
     % specify folders
-    sourceFolder=['Datasets\' dataset{currentDataset,1} '\beatwiseFeatures' dataset{currentDataset,2} '_NOEX_2022_01_20\'];
+    sourceFolder=[baseDatasetDir dataset{currentDataset,1} '\Features\' dataset{currentDataset,2} '\' fromDir '\'];
     if(~mixDatasets)
         resultsFolderBase=['Datasets\' dataset{currentDataset,1} '\models' dataset{currentDataset,2} '\'];
     end
@@ -68,7 +68,7 @@ for currentDataset = 1:size(dataset,1)
         dataTables{currentDataset,1} = tableCollection;
         % include PPGI if desired
         if(strcmp(dataset{currentDataset,1},'CPT') && includePPGI)
-            load(['Datasets\' dataset{currentDataset,1} '\' PPGIdir 'tableCollection_ensembleBeat.mat']);
+            load([baseDatasetDir dataset{currentDataset,1} '\' PPGIdir 'tableCollection_ensembleBeat.mat']);
             for entry = 1:size(tableCollection,1)
                 % get all entries that are also in dataTables
                 if(~any(strcmp(dataTables{currentDataset,1},tableCollection{entry,1})))
@@ -90,15 +90,15 @@ if(mixDatasets)
     datasetString(end) = [];
     if(includePPGI)
         if(intraSubjectMix)
-            resultsFolderBase=['Datasets\' datasetString '_withPPGI\modelsMIX\intraSubject\'];
+            resultsFolderBase=[baseDatasetDir datasetString '_withPPGI\modelsMIX\intraSubject\'];
         else
-            resultsFolderBase=['Datasets\' datasetString '_withPPGI\modelsMIX\interSubject\'];
+            resultsFolderBase=[baseDatasetDir datasetString '_withPPGI\modelsMIX\interSubject\'];
         end
     else
         if(intraSubjectMix)
-            resultsFolderBase=['Datasets\' datasetString '_withoutPPGI\modelsMIX\intraSubject\'];
+            resultsFolderBase=[baseDatasetDir datasetString '_withoutPPGI\modelsMIX\intraSubject\'];
         else
-            resultsFolderBase=['Datasets\' datasetString '_withoutPPGI\modelsMIX\interSubject\'];
+            resultsFolderBase=[baseDatasetDir datasetString '_withoutPPGI\modelsMIX\interSubject\'];
         end
     end
 end

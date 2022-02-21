@@ -264,7 +264,7 @@ for currentWindow = 1:numWindows
             end
         end     
         if(~isempty(minima)) % delete all minima after maximum cardiac cycle duration
-            while(beatIntervalBefore + minimaIndices(end) - 1 > maxCardiacCycleNumBeats) 
+            while(beatIntervalBefore - beatStartIndex + minimaIndices(end) - 1 > maxCardiacCycleNumBeats) 
                 minimaIndices(end) = [];
                 minima(end) = [];
                 if(isempty(minimaIndices))
@@ -273,7 +273,7 @@ for currentWindow = 1:numWindows
             end
         end
         if(~isempty(minima)) % delete all minima before minimum cardiac cycle duration
-            while(beatIntervalBefore + minimaIndices(1) - 1 < minCardiacCycleNumBeats) 
+            while(beatIntervalBefore - beatStartIndex + minimaIndices(1) - 1 < minCardiacCycleNumBeats)
                 minimaIndices(1) = [];
                 minima(1) = [];
                 if(isempty(minimaIndices))

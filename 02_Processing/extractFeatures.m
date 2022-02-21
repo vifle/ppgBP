@@ -129,8 +129,8 @@ featureTableLongTemplate.Sex = categorical(featureTableLongTemplate.Sex);
 % calculate results
 numAlg = size(algorithms,1);
 numSubjects = size(patients,1);
-%for actualAlgorithm = 1:numAlg % only for convenience (debugging)
-parfor actualAlgorithm = 1:numAlg
+for actualAlgorithm = 1:numAlg % only for convenience (debugging)
+%parfor actualAlgorithm = 1:numAlg
     if(~usePreviousResults)
         % adapt template
         featureTableLong = featureTableLongTemplate;
