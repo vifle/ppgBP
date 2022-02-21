@@ -19,8 +19,8 @@ clc
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% choose steps to be executed
-doDecomposition = true;
-doFeatureExtraction = false;
+doDecomposition = false;
+doFeatureExtraction = true;
 doTraining = false;
 doTesting = false;
 
@@ -137,25 +137,27 @@ if(doFeatureExtraction)
     % settings
     settings.Features.extractFullDataset = false;
     settings.Features.usePreviousResults = false;
-    settings.Features.dataset ='CPT';
+    settings.Features.dataset ='PPG_BP';
     % settings.Features.metaDataFeatures = {'ID';'Beat';'Sex';'Age';'Height';'Weight';'SBP';'DBP';'PP';'TPR'}; % add RR
     settings.Features.metaDataFeatures = {'ID';'Beat';'Sex';'Age';'Height';'Weight';'SBP';'DBP';'PP'}; % add RR % add epoch?
     % settings only for subset
     settings.Features.dataClass ='ppg'; % ppg, ppgiSingles, ppgiEnsemble
 
     % dirs
-    settings.Features.fromDir = '2022_02_17'; % ending of dir from which data should be used as input
-    settings.Features.toDir = '2022_02_17'; % ending of dir to which data will be saved
+    settings.Features.fromDir = '2022_02_20'; % ending of dir from which data should be used as input
+    settings.Features.toDir = '2022_02_20'; % ending of dir to which data will be saved
 
     % execute function that stores settings
     storeSettings(baseDatasetDir,settings);
-    settings = rmfield(settings,'Features');
 
     % execute function
     extractFeatures(baseDatasetDir,settings.Features.fromDir,settings.Features.toDir, ...
         settings.Features.extractFullDataset,settings.Features.usePreviousResults, ...
         settings.Features.dataset,settings.Features.dataClass, ...
         settings.Features.metaDataFeatures)
+
+    % remove current settings
+    settings = rmfield(settings,'Features');
 end
 
 %% trainModels

@@ -57,7 +57,7 @@ if(extractFullDataset)
     end
     sourceFolder=[baseDatasetDir dataset '\realData\FULL\'];
     resultsFolder=[baseDatasetDir dataset '\Features\FULL\' toDir '\'];
-    dataFolder=[baseDatasetDir dataset '\Decomposition\FULL' fromDir '\'];
+    dataFolder=[baseDatasetDir dataset '\Decomposition\FULL\' fromDir '\'];
 else
     sourceFolder=[baseDatasetDir dataset '\realData\SUBSET\'];
     resultsFolder=[baseDatasetDir dataset '\Features\SUBSET\' toDir '\'];
