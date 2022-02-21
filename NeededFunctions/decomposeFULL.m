@@ -27,7 +27,7 @@ parfor actualPatientNumber=1:numPatients
     end
     if(~any(isnan(beatIndices)))
         try
-            [singleBeats,~,~] = createSingleBeats(filteredPPG,samplingFreq,beatIndices);
+            [singleBeats,~,importantPoints] = createSingleBeats(filteredPPG,samplingFreq,beatIndices);
         catch
             singleBeats = NaN;
         end
@@ -59,6 +59,7 @@ parfor actualPatientNumber=1:numPatients
             if(iscell(singleBeats))
                 if(isnan(singleBeats{beatNumber}))
                     decompositionResults(beatNumber).singleBeats = NaN;
+                    decompositionResults(beatNumber).importantPoints = NaN;
                     decompositionResults(beatNumber).nrmse = NaN;
                     decompositionResults(beatNumber).signal_mod = NaN;
                     decompositionResults(beatNumber).y = cell(3,1);
@@ -68,12 +69,14 @@ parfor actualPatientNumber=1:numPatients
                     continue
                 else
                     decompositionResults(beatNumber).singleBeats = singleBeats{beatNumber};
+                    decompositionResults(beatNumber).importantPoints = importantPoints(beatNumber);
                 end
                 % TODO: singleBeats can be smaller than number of beats
                 % insert nan for exclusions in while loop?
                 % how was this handled before?
             elseif(isnan(singleBeats))
                 decompositionResults(beatNumber).singleBeats = NaN;
+                decompositionResults(beatNumber).importantPoints = NaN;
                 decompositionResults(beatNumber).nrmse = NaN;
                 decompositionResults(beatNumber).signal_mod = NaN;
                 decompositionResults(beatNumber).y = cell(3,1);
@@ -83,6 +86,7 @@ parfor actualPatientNumber=1:numPatients
                 continue
             else
                 decompositionResults(beatNumber).singleBeats = NaN;
+                decompositionResults(beatNumber).importantPoints = NaN;
                 decompositionResults(beatNumber).nrmse = NaN;
                 decompositionResults(beatNumber).signal_mod = NaN;
                 decompositionResults(beatNumber).y = cell(3,1);

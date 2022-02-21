@@ -73,7 +73,7 @@ parfor actualPatientNumber=1:numPatients
                 end
                 if(~any(isnan(beatIndices)))
                     try
-                        [singleBeats,~,~] = createSingleBeats(filteredPPG,samplingFreq,beatIndices);
+                        [singleBeats,~,importantPoints] = createSingleBeats(filteredPPG,samplingFreq,beatIndices);
                     catch
                         singleBeats = NaN;
                     end
@@ -82,6 +82,7 @@ parfor actualPatientNumber=1:numPatients
                 end
             else
                 singleBeats = {filteredPPG}; % for ensembleBeat the beat is already cut and detrended
+                importantPoints = NaN;
                 beatIndices = 1; % just give beatIndices an arbitrary value
             end
             for actualAlgorithm = 1:numAlgs
@@ -113,6 +114,7 @@ parfor actualPatientNumber=1:numPatients
                     if(iscell(singleBeats))
                         if(isnan(singleBeats{beatNumber}))
                             decompositionResults(beatNumber).singleBeats = NaN;
+                            decompositionResults(beatNumber).importantPoints = NaN;
                             decompositionResults(beatNumber).nrmse = NaN;
                             decompositionResults(beatNumber).signal_mod = NaN;
                             decompositionResults(beatNumber).y = cell(3,1);
@@ -122,9 +124,11 @@ parfor actualPatientNumber=1:numPatients
                             continue
                         else
                             decompositionResults(beatNumber).singleBeats = singleBeats{beatNumber};
+                            decompositionResults(beatNumber).importantPoints = importantPoints(beatNumber);
                         end
                     elseif(isnan(singleBeats))
                         decompositionResults(beatNumber).singleBeats = NaN;
+                        decompositionResults(beatNumber).importantPoints = NaN;
                         decompositionResults(beatNumber).nrmse = NaN;
                         decompositionResults(beatNumber).signal_mod = NaN;
                         decompositionResults(beatNumber).y = cell(3,1);
@@ -134,22 +138,13 @@ parfor actualPatientNumber=1:numPatients
                         continue
                     else
                         decompositionResults(beatNumber).singleBeats = NaN;
+                        decompositionResults(beatNumber).importantPoints = NaN;
                         decompositionResults(beatNumber).nrmse = NaN;
                         decompositionResults(beatNumber).signal_mod = NaN;
                         decompositionResults(beatNumber).y = cell(3,1);
                         decompositionResults(beatNumber).opt_params = NaN;
                         decompositionResults(beatNumber).numDecompositions = 0;
                         decompositionResults(beatNumber).error = 2;
-                        continue
-                    end
-
-                    if(isnan(decompositionResults(beatNumber).singleBeats))
-                        decompositionResults(beatNumber).nrmse = NaN;
-                        decompositionResults(beatNumber).signal_mod = NaN;
-                        decompositionResults(beatNumber).y = cell(3,1);
-                        decompositionResults(beatNumber).opt_params = NaN;
-                        decompositionResults(beatNumber).numDecompositions = 0;
-                        decompositionResults(beatNumber).error = 1;
                         continue
                     end
 
