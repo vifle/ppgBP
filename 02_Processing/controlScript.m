@@ -21,7 +21,7 @@ clc
 %% choose steps to be executed
 doDecomposition = false;
 doFeatureExtraction = false;
-doTraining = false;
+doTraining = true;
 doTesting = true;
 
 %% get path to datasets
@@ -160,14 +160,23 @@ if(doFeatureExtraction)
     settings = rmfield(settings,'Features');
 end
 
+%% format data
+% 3 functions:
+% - create data split
+% - create data tables
+% - convert data tables to csv
+
 %% trainModels
 if(doTraining)
+    randomState = rng; % save state of random number generator
+    numRuns = 4;
+    for currentRun = 1:numRuns
     % settings
     mixDatasets = true;
-    intraSubjectMix = true; % Bedeutung: Zufälliges Ziehen aus allen Schlägen
+    intraSubjectMix = [false,false,true,true]; % Bedeutung: Zufälliges Ziehen aus allen Schlägen
     mixHu = true; % Bedeutung: Zufääligen Ziehen aus allen Schlägen eines Probanden
-    includePPGI = true;
-    PPGIdir = 'Features\SUBSET\2022_02_20\';
+    includePPGI = [false,true,false,true];
+    PPGIdir = 'Features\SUBSET\2022_02_21\';
     % modelTypes = {'LinearMixedModel','LinearMixedModel'; ...
     %     'LinearModel','LinearModel';...
     %     'RandomForest','classreg.learning.regr.RegressionEnsemble'};
@@ -181,24 +190,32 @@ if(doTraining)
     end
 
     % dirs
-    fromDir = '2022_02_20'; % ending of dir from which data should be used as input
-    toDir = '2022_02_20'; % ending of dir to which data will be saved
+    fromDir = '2022_02_21'; % ending of dir from which data should be used as input
+    toDir = '2022_02_22'; % ending of dir to which data will be saved
 
     % execute function
-    trainModels(baseDatasetDir,fromDir,toDir,mixDatasets,intraSubjectMix,mixHu,...
-        includePPGI,PPGIdir,modelTypes,portionTraining,dataset)
+    trainModels(baseDatasetDir,fromDir,toDir,mixDatasets,intraSubjectMix(currentRun), ...
+        mixHu,includePPGI(currentRun),PPGIdir,modelTypes,portionTraining,dataset,randomState)
+    end
+    
+    % convert data tables
+    addpath('..\03_Postprocessing');
+    convertTable2CSV();
+    
 end
 
 %% testModels
 if(doTesting)
+    numRuns = 4;
+    for currentRun = 1:numRuns
     % settings
     doDummyError = {false,'SBP'}; % discards trained model for a comparison of test data with mean of trainings data, test data and all data --> each comparison is treated as a 'model'
     doVisualization = {true,'','all',true,{true,'all'}}; % (1) true = plots are created; (2) 'singles' = figures for each subject separately; (3) 'all' = only combined figure; (4) true = background color divides subjects, (5) 'all' or cell containing chars that define features to be plottet with BP
     modelTypes = {'RandomForest'};
     %modelTypes = {'LinearMixedModel';'LinearModel';'RandomForest'};
     mixDatasets = true;
-    intraSubjectMix = false;
-    includePPGI = false;
+    intraSubjectMix = [true,true,false,false];
+    includePPGI = [true,false,true,false];
     if(mixDatasets)
         set = 'CPTFULL_PPG_BPSUBSET';
     else
@@ -208,10 +225,11 @@ if(doTesting)
     end
 
     % dirs
-    fromDir = '2022_02_20'; % ending of dir from which data should be used as input
-    toDir = '2022_02_20'; % ending of dir to which data will be saved
+    fromDir = '2022_02_21'; % ending of dir from which data should be used as input
+    toDir = '2022_02_21'; % ending of dir to which data will be saved
 
     % execute function
     testModels(baseDatasetDir,fromDir,toDir,doDummyError,doVisualization,...
-        modelTypes,mixDatasets,intraSubjectMix,includePPGI,set)
+        modelTypes,mixDatasets,intraSubjectMix(currentRun),includePPGI(currentRun),set)
+    end
 end

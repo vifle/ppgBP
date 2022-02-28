@@ -88,19 +88,17 @@ end
 % specify results folder if datasets are mixed
 if(mixDatasets)
     datasetString(end) = [];
-    if(intraSubjectMix)
-        splitDir = [baseDatasetDir datasetString '\intraSubject\'];
-        if(includePPGI)
-            resultsFolderBase=[splitDir 'withPPGI\'];
+    if(includePPGI)
+        if(intraSubjectMix)
+            resultsFolderBase=[baseDatasetDir datasetString '\withPPGI\intraSubject\'];
         else
-            resultsFolderBase=[splitDir 'withoutPPGI\'];
+            resultsFolderBase=[baseDatasetDir datasetString '\withPPGI\interSubject\'];
         end
     else
-        splitDir = [baseDatasetDir datasetString '\interSubject\'];
-        if(includePPGI)
-            resultsFolderBase=[splitDir 'withPPGI\'];
+        if(intraSubjectMix)
+            resultsFolderBase=[baseDatasetDir datasetString '\withoutPPGI\intraSubject\'];
         else
-            resultsFolderBase=[splitDir 'withoutPPGI\'];
+            resultsFolderBase=[baseDatasetDir datasetString '\withoutPPGI\interSubject\'];
         end
     end
 end
@@ -376,8 +374,7 @@ for actualAlgorithm = 1:size(algorithms,1)
     
     % save model
     if(mixDatasets)
-        save([resultsFolderBase 'dataTables.mat'],'trainTable','testTable')
-        save([resultsFolder 'modelResults.mat'],'modelResults');
+        save([resultsFolder 'modelResults.mat'],'modelResults','trainTable','testTable');
     else
         save([resultsFolder 'modelResults.mat'],'modelResults','trainTable','categoricalVars');
     end

@@ -34,23 +34,17 @@ for actualAlgorithm = 1:size(algorithms,1)
     evaluationResults = struct;
     if(mixDatasets)
         % load model and data
-        if(intraSubjectMix)
-            splitDir = [baseDatasetDir mixedSet '\intraSubject\'];
-            if(includePPGI)
-                load([splitDir 'withPPGI\dataTables.mat'])
-                load([splitDir 'withPPGI\' algorithms{actualAlgorithm,1} '\modelResults.mat']);
+        if(includePPGI)
+            if(intraSubjectMix)
+                load([baseDatasetDir mixedSet '\withPPGI\intraSubject\' algorithms{actualAlgorithm,1} '\modelResults.mat']);
             else
-                load([splitDir 'withoutPPGI\dataTables.mat'])
-                load([splitDir 'withoutPPGI\' algorithms{actualAlgorithm,1} '\modelResults.mat']);
+                load([baseDatasetDir mixedSet '\withPPGI\interSubject\' algorithms{actualAlgorithm,1} '\modelResults.mat']);
             end
         else
-            splitDir = [baseDatasetDir mixedSet '\interSubject\'];
-            if(includePPGI)
-                load([splitDir 'withPPGI\dataTables.mat'])
-                load([splitDir 'withPPGI\' algorithms{actualAlgorithm,1} '\modelResults.mat']);
+            if(intraSubjectMix)
+                load([baseDatasetDir mixedSet '\withoutPPGI\intraSubject\' algorithms{actualAlgorithm,1} '\modelResults.mat']);
             else
-                load([splitDir 'withoutPPGI\dataTables.mat'])
-                load([splitDir 'withoutPPGI\' algorithms{actualAlgorithm,1} '\modelResults.mat']);
+                load([baseDatasetDir mixedSet '\withoutPPGI\interSubject\' algorithms{actualAlgorithm,1} '\modelResults.mat']);
             end
         end
         % save data used
@@ -172,7 +166,7 @@ for actualAlgorithm = 1:size(algorithms,1)
             mixChar = 'interSubject';
         end
         if(doDummyError{1})
-            save([baseDatasetDir mixedSet '\' mixChar '\' ppgiChar '\' algorithms{actualAlgorithm,1} '\evaluationResultsDummy.mat'],'evaluationResults');
+            save([baseDatasetDir mixedSet '\' ppgiChar '\' mixChar '\' algorithms{actualAlgorithm,1} '\evaluationResultsDummy.mat'],'evaluationResults');
         else
             % visualize results
             if(doVisualization{1})
@@ -191,10 +185,10 @@ for actualAlgorithm = 1:size(algorithms,1)
                                 xlabel('sample')
                                 ylabel('blood pressure / mmHg')
                                 legend('prediction','groundTruth');
-                                if(exist([baseDatasetDir mixedSet '\' mixChar '\' ppgiChar '\' algorithms{actualAlgorithm,1} '\figures\' modelTypes{actualModelType} '\' models{actualModel} '\' ],'dir')~=7)
-                                    mkdir([baseDatasetDir mixedSet '\' mixChar '\' ppgiChar '\' algorithms{actualAlgorithm,1} '\figures\' modelTypes{actualModelType} '\' models{actualModel} '\' ])
+                                if(exist([baseDatasetDir mixedSet '\' ppgiChar '\' mixChar '\' algorithms{actualAlgorithm,1} '\figures\' modelTypes{actualModelType} '\' models{actualModel} '\' ],'dir')~=7)
+                                    mkdir([baseDatasetDir mixedSet '\' ppgiChar '\' mixChar '\' algorithms{actualAlgorithm,1} '\figures\' modelTypes{actualModelType} '\' models{actualModel} '\' ])
                                 end
-                                savefig(gcf,[baseDatasetDir mixedSet '\' mixChar '\' ppgiChar '\' algorithms{actualAlgorithm,1} '\figures\' modelTypes{actualModelType} '\' models{actualModel} '\'  char(testSubs(currentSubject)) '.fig']);
+                                savefig(gcf,[baseDatasetDir mixedSet '\' ppgiChar '\' mixChar '\' algorithms{actualAlgorithm,1} '\figures\' modelTypes{actualModelType} '\' models{actualModel} '\'  char(testSubs(currentSubject)) '.fig']);
                                 close;
                                 if(doVisualization{5}{1})
                                      % visualize features
@@ -237,10 +231,10 @@ for actualAlgorithm = 1:size(algorithms,1)
                             xlabel('sample')
                             ylabel('blood pressure / mmHg')
                             legend([hPred, hGT], 'prediction','groundTruth');
-                            if(exist([baseDatasetDir mixedSet '\' mixChar '\' ppgiChar '\' algorithms{actualAlgorithm,1} '\figures\' modelTypes{actualModelType} '\' models{actualModel} '\' ],'dir')~=7)
-                                mkdir([baseDatasetDir mixedSet '\' mixChar '\' ppgiChar '\' algorithms{actualAlgorithm,1} '\figures\' modelTypes{actualModelType} '\' models{actualModel} '\' ])
+                            if(exist([baseDatasetDir mixedSet '\' ppgiChar '\' mixChar '\' algorithms{actualAlgorithm,1} '\figures\' modelTypes{actualModelType} '\' models{actualModel} '\' ],'dir')~=7)
+                                mkdir([baseDatasetDir mixedSet '\' ppgiChar '\' mixChar '\' algorithms{actualAlgorithm,1} '\figures\' modelTypes{actualModelType} '\' models{actualModel} '\' ])
                             end
-                            savefig(gcf,[baseDatasetDir mixedSet '\' mixChar '\' ppgiChar '\' algorithms{actualAlgorithm,1} '\figures\' modelTypes{actualModelType} '\' models{actualModel} '\' 'all.fig']);
+                            savefig(gcf,[baseDatasetDir mixedSet '\' ppgiChar '\' mixChar '\' algorithms{actualAlgorithm,1} '\figures\' modelTypes{actualModelType} '\' models{actualModel} '\' 'all.fig']);
                             close;
                             if(doVisualization{5}{1})
                                 % visualize features
@@ -282,10 +276,10 @@ for actualAlgorithm = 1:size(algorithms,1)
                                         hBP = plot(evaluationResults.(modelTypes{actualModelType})(actualModel).groundTruth);
                                         ylabel('blood pressure / mmHg')
                                         xlabel('sample')
-                                        if(exist([baseDatasetDir mixedSet '\' mixChar '\' ppgiChar '\' algorithms{actualAlgorithm,1} '\figures\' modelTypes{actualModelType} '\' models{actualModel} '\' featureNames{actualFeature} '\'],'dir')~=7)
-                                            mkdir([baseDatasetDir mixedSet '\' mixChar '\' ppgiChar '\' algorithms{actualAlgorithm,1} '\figures\' modelTypes{actualModelType} '\' models{actualModel} '\' featureNames{actualFeature} '\'])
+                                        if(exist([baseDatasetDir mixedSet '\' ppgiChar '\' mixChar '\' algorithms{actualAlgorithm,1} '\figures\' modelTypes{actualModelType} '\' models{actualModel} '\' featureNames{actualFeature} '\'],'dir')~=7)
+                                            mkdir([baseDatasetDir mixedSet '\' ppgiChar '\' mixChar '\' algorithms{actualAlgorithm,1} '\figures\' modelTypes{actualModelType} '\' models{actualModel} '\' featureNames{actualFeature} '\'])
                                         end
-                                        savefig(gcf,[baseDatasetDir mixedSet '\' mixChar '\' ppgiChar '\' algorithms{actualAlgorithm,1} '\figures\' modelTypes{actualModelType} '\' models{actualModel} '\' featureNames{actualFeature} '\' 'all.fig']);
+                                        savefig(gcf,[baseDatasetDir mixedSet '\' ppgiChar '\' mixChar '\' algorithms{actualAlgorithm,1} '\figures\' modelTypes{actualModelType} '\' models{actualModel} '\' featureNames{actualFeature} '\' 'all.fig']);
                                         close;
                                     end
                                 elseif(iscell(doVisualization{5}{2}))
@@ -307,7 +301,7 @@ for actualAlgorithm = 1:size(algorithms,1)
                 end
             end
             % save results
-            save([baseDatasetDir mixedSet '\' mixChar '\' ppgiChar '\' algorithms{actualAlgorithm,1} '\evaluationResults.mat'],'evaluationResults');
+            save([baseDatasetDir mixedSet '\' ppgiChar '\' mixChar '\' algorithms{actualAlgorithm,1} '\evaluationResults.mat'],'evaluationResults');
         end
     else
         % load model and data

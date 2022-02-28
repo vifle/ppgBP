@@ -1,58 +1,59 @@
-function [randomState] = trainModels(baseDatasetDir,fromDir,toDir,mixDatasets,intraSubjectMix,mixHu,includePPGI,PPGIdir,modelTypes,portionTraining,dataset,randomState)
-%% TODO
-% Namen der Tabelle überarbeiten und an andere Daten anpassen
-% wie gut ist varianz erklärt? R^2 ansehen
-% evtl. mal group mean centering probieren
-% estimate entspricht quasi dem Korrelationsfaktor?
+% split for mix and not mix?
+% eig nur fÃ¼r mix wirklich kompliziert
+% --> erstmal nur mix
+% warum werden ohne mix hier keine testTable erstellt?
+% wahrscheinlich sollte das da so sein, dass ein dataset direkt das
+% komplette trainignsset ist und bei test das dataset angegeben wird, auf
+% dem getestet wird. Das dann jetzt so machen, dass hier auch zwei sets
+% geladen werden, und die einteilung hier erfolgt und das in testModels
+% entfernen
 
-% der Proband sollte ein confounding factor sein. Der offset ist sicher
-% unterschiedlich für verschiedene Probanden
+% muss das Ã¼ber algorithmen gemacht werden? es ist hier ja eigentlich nicht
+% wichtig, ob bestimtme features bei den einen algorithmen sind und bei
+% anderen nicht
+% --> split machen, bevor Tabellen fÃ¼r verschiedene algorithmen erstellt
+% werden
 
-% append exisiting modelResults?
+% unterscheidung in mit und ohne ppgi auch unsinnig, die tables kÃ¶nnen ja
+% quasi Ã¼bergeordnet dazu sein; aber dann wÃ¤re es besser, wenn erst in
+% intra/inter getrennt wird und dadrin dann in mit/ohne ppgi
 
-% add restrictions to inputs
+% features und algorithmen hier raus? ich will eigentlich schon Tabellen
+% erstellen
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% reicht es, einfach den subject split zu erstellen erstmal und
+% abzuspeichern?
+% brauche aber schon noch ne matlab funktion, um die Tabellen algorithmen
+% spezifisch zu erstellen; das kann dann nochmal ne andere Funktion sein
 
-% implement dependence on algorithm used (for which model to use)
-
-% intraSubjectMix needs to be different folder
-% add dependence on dataExcluded or not
-
-% save outputs of multiple models?
-% ensure that for every algorithm the same entries are chosen for training
-% and testing?
-
-% do not save models under datasets but maybe its own "models" folder?
+% ich speichere doch den status des random states...funktioniert das nicht?
+% + reicht das nicht aus, um die Funktion wie bisher sinnvoll zu nutzen?
+% + umstellung der Speicherstruktur + trennen von training und tabellen
+% --> das funktioniert; aber ich rufe die Funktion mehrmals von auÃŸen auf;
+% das ist das Problem
+% einfach den random state ausgeben und neu einladen?
+% macht das mehrfache aufrufen von rng sinn?
 
 
-% wenn iPPG included sein soll, muss ich zu den entsprechenden Probanden
-% einfach PPGI suchen und anfügen --> erstmal Ordner explizit angeben; nur
-% für CPT; nur in mix dataset
-% mit neuem identifier anfügen (125_L1_ensemble oder so) --> bei strikter
-% Trennung kommen die in das richtige System
-% Variable anfügen: CAM oder PPG? Könnte dem random Forest ja helfen...
-
+function [] = createDataSplit(baseDatasetDir,fromDir,toDir,mixDatasets,intraSubjectMix,mixHu,includePPGI,PPGIdir,portionTraining,dataset)
 %% Paths
 % add path to functions that are required (derivation, adding noise,...)
 addpath('..\NeededFunctions');
-addpath('C:\Users\vince\sciebo\Programme\MATLAB_Tools\altmany-export_fig-4703a84')
 % add path to decomposition functions and cell with algorithm names
 addpath('..\Algorithms');
-% add path to feature functions and cell with feature names
-addpath('..\Features');
-addpath('..\Features\decomposition');
-addpath('..\Features\secondDerivative');
-addpath('..\Features\statistical');
-addpath('..\Features\frequency');
 % load file containing algorithms here
 load('algorithmsBPestimationTEST.mat','algorithms');
 %load('algorithmsBPestimation3Kernels.mat','algorithms');
 
+
+%% was passiert hier?
+% algorithmen werden hier nicht gebraucht
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if(mixDatasets)
     datasetString = [];
     dataTables = cell(size(dataset,1),1);
 end
+
 for currentDataset = 1:size(dataset,1)
     % specify folders
     sourceFolder=[baseDatasetDir dataset{currentDataset,1} '\Features\' dataset{currentDataset,2} '\' fromDir '\'];
@@ -85,28 +86,32 @@ for currentDataset = 1:size(dataset,1)
         end
     end
 end
-% specify results folder if datasets are mixed
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% specify results folder if datasets are mixed
 if(mixDatasets)
     datasetString(end) = [];
     if(intraSubjectMix)
-        splitDir = [baseDatasetDir datasetString '\intraSubject\'];
+        tableDir = [baseDatasetDir datasetString '\intraSubject\'];
         if(includePPGI)
-            resultsFolderBase=[splitDir 'withPPGI\'];
+            resultsFolderBase=[tableDir 'withPPGI\'];
         else
-            resultsFolderBase=[splitDir 'withoutPPGI\'];
+            resultsFolderBase=[tableDir 'withoutPPGI\'];
         end
     else
-        splitDir = [baseDatasetDir datasetString '\interSubject\'];
+        tableDir = [baseDatasetDir datasetString '\interSubject\'];
         if(includePPGI)
-            resultsFolderBase=[splitDir 'withPPGI\'];
+            resultsFolderBase=[tableDir 'withPPGI\'];
         else
-            resultsFolderBase=[splitDir 'withoutPPGI\'];
+            resultsFolderBase=[tableDir 'withoutPPGI\'];
         end
     end
 end
 
-%% check algorithms and features
-%randomState = rng; % save state of random number generator
+%% check algorithms and features --> das will ich ja eigentlich nicht
+% subject kram muss ja erstmal nicht in diese funktion; ein teil davon muss
+% dann eben in der Tabellen erstellungsfunktion gemacht werden
+randomState = rng; % save state of random number generator
 allSubjects = cell(size(dataset,1),size(algorithms,1));
 trainSubjects = cell(size(dataset,1),size(algorithms,1));
 testSubjects = cell(size(dataset,1),size(algorithms,1));
@@ -178,6 +183,13 @@ for actualAlgorithm = 1:size(algorithms,1)
                 end
             end
             
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            % --> bis hier habe ich doch fÃ¼r mixed schon die subjects, die
+            % train und test sind
+            
+            
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            % --> usable vars eher in ne andere Funktion packen
             
             availableVars{currentDataset,actualAlgorithm} = currentTable.Properties.VariableNames;
             if(currentDataset == 1)
@@ -202,19 +214,19 @@ for actualAlgorithm = 1:size(algorithms,1)
         mixedTables{actualAlgorithm,1} = mixedTable;
         clear mixedTable
     else
-        % find correct table via comparison
-        currentTable = tableCollection{strcmp(algorithms{actualAlgorithm},tableCollection(:,1)),2};
-        % get usableVars here as all table variables and add their type
-        usableVars{actualAlgorithm,1} = currentTable.Properties.VariableNames;
-        for currentVariable = 1:numel(usableVars{actualAlgorithm,1})
-            varType = class(currentTable.(usableVars{actualAlgorithm,1}{currentVariable}));
-            usableVars{actualAlgorithm,2}(1,end+1) = {varType};
-        end
-        clear currentTable
+%         % find correct table via comparison
+%         currentTable = tableCollection{strcmp(algorithms{actualAlgorithm},tableCollection(:,1)),2};
+%         % get usableVars here as all table variables and add their type
+%         usableVars{actualAlgorithm,1} = currentTable.Properties.VariableNames;
+%         for currentVariable = 1:numel(usableVars{actualAlgorithm,1})
+%             varType = class(currentTable.(usableVars{actualAlgorithm,1}{currentVariable}));
+%             usableVars{actualAlgorithm,2}(1,end+1) = {varType};
+%         end
+%         clear currentTable
     end
 end
 
-%% do actual training
+%% do actual training --> no training
 for actualAlgorithm = 1:size(algorithms,1)
     %% Preproessing
     % create algorithm specific path
@@ -228,14 +240,14 @@ for actualAlgorithm = 1:size(algorithms,1)
     if(mixDatasets)
         mixedTable = mixedTables{actualAlgorithm,1};
     else
-        trainTable = tableCollection{strcmp(algorithms{actualAlgorithm},tableCollection(:,1)),2};
+%         trainTable = tableCollection{strcmp(algorithms{actualAlgorithm},tableCollection(:,1)),2};
     end
     
     % exclude measurements
     if(mixDatasets)
         mixedTable(any(ismissing(mixedTable),2),:) = [];
     else
-        trainTable(any(ismissing(trainTable),2),:) = [];
+%         trainTable(any(ismissing(trainTable),2),:) = [];
     end
     
     % get categrorical vars
@@ -246,7 +258,7 @@ for actualAlgorithm = 1:size(algorithms,1)
         if(mixDatasets)
             mixedTable.(categoricalVars{currentCategory}) = nominal(mixedTable.(categoricalVars{currentCategory}));
         else
-            trainTable.(categoricalVars{currentCategory}) = nominal(trainTable.(categoricalVars{currentCategory}));
+%             trainTable.(categoricalVars{currentCategory}) = nominal(trainTable.(categoricalVars{currentCategory}));
         end
     end
     
@@ -270,116 +282,13 @@ for actualAlgorithm = 1:size(algorithms,1)
         testTable = mixedTable(~idx,:);
     end
     
-    %% create models
-    % mixed effects models
-    if(any(ismember(modelTypes(:,1),'LinearMixedModel')))
-        lme1 = fitlme(trainTable, ...
-            'SBP ~ P1 + P2 + T1 + T2 + b_a + (P1|ID) + (P2|ID) + (T1|ID) + (T2|ID) + (b_a|ID)','fitMethod','REML')
-        lme2 = fitlme(trainTable, ...
-            'SBP ~ P1 + P2 + T1 + T2 + (P1|ID) + (P2|ID) + (T1|ID) + (T2|ID)','fitMethod','REML')
-        lme3 = fitlme(trainTable, ...
-            'SBP ~ P1 + P2 + T1 + T2 + kurt + skew + SD + freq1 + freq2 + freq3 + freq4 + (P1|ID) + (P2|ID) + (T1|ID) + (T2|ID) + (kurt|ID) + (skew|ID) + (SD|ID) + (freq1|ID) + (freq2|ID) + (freq3|ID) + (freq4|ID)','fitMethod','REML')
-        lme4 = fitlme(trainTable, ...
-            'SBP ~ P1 + P2 + T1 + T2 + b_a + kurt + skew + SD + freq1 + freq2 + freq3 + freq4 + (P1|ID) + (P2|ID) + (T1|ID) + (T2|ID) + (b_a|ID) + (kurt|ID) + (skew|ID) + (SD|ID) + (freq1|ID) + (freq2|ID) + (freq3|ID) + (freq4|ID)','fitMethod','REML')
-        lme5 = fitlme(trainTable, ...
-            'SBP ~ P1 + P2 + T1 + T2 + b_a + kurt + skew + SD + freq1 + freq2 + freq3 + freq4 + W1 + W2 + (P1|ID) + (P2|ID) + (T1|ID) + (T2|ID) + (b_a|ID) + (kurt|ID) + (skew|ID) + (SD|ID) + (freq1|ID) + (freq2|ID) + (freq3|ID) + (freq4|ID) + (W1|ID) + (W2|ID)','fitMethod','REML')
-        lme6 = fitlme(trainTable, ...
-            'SBP ~ P1 + P2 + T1 + T2 + kurt + skew + SD + freq1 + freq2 + freq3 + freq4 + W1 + W2 + (P1|ID) + (P2|ID) + (T1|ID) + (T2|ID) + (kurt|ID) + (skew|ID) + (SD|ID) + (freq1|ID) + (freq2|ID) + (freq3|ID) + (freq4|ID) + (W1|ID) + (W2|ID)','fitMethod','REML')
-    end
-    
-    % multiple linear regression
-    if(any(ismember(modelTypes(:,1),'LinearModel')))
-        lm1 = fitlm(trainTable, ...
-            'SBP ~ P1 + P2 + T1 + T2 + b_a')
-        lm2 = fitlm(trainTable, ...
-            'SBP ~ P1 + P2 + T1 + T2')
-        lm3 = fitlm(trainTable, ...
-            'SBP ~ P1 + P2 + T1 + T2 + kurt + skew + SD + freq1 + freq2 + freq3 + freq4')
-        lm4 = fitlm(trainTable, ...
-            'SBP ~ P1 + P2 + T1 + T2 + b_a + kurt + skew + SD + freq1 + freq2 + freq3 + freq4')
-        lm5 = fitlm(trainTable, ...
-            'SBP ~ P1 + P2 + T1 + T2 + b_a + kurt + skew + SD + freq1 + freq2 + freq3 + freq4 + W1 + W2')
-        lm6 = fitlm(trainTable, ...
-            'SBP ~ P1 + P2 + T1 + T2 + kurt + skew + SD + freq1 + freq2 + freq3 + freq4 + W1 + W2')
-    end
-
-    % regression tree models
-    % random forest, adaboost,xgboost?
-    if(any(ismember(modelTypes(:,1),'RandomForest')))
-%         rf1 = fitrensemble(trainTable, ...
-%             'SBP ~ P1 + P2 + T1 + T2 + b_a')
-%         rf2 = fitrensemble(trainTable, ...
-%             'SBP ~ P1 + P2 + T1 + T2')
-%         rf3 = fitrensemble(trainTable, ...
-%             'SBP ~ P1 + P2 + T1 + T2 + kurt + skew + SD + freq1 + freq2 + freq3 + freq4')
-%         rf4 = fitrensemble(trainTable, ...
-%             'SBP ~ P1 + P2 + T1 + T2 + b_a + kurt + skew + SD + freq1 + freq2 + freq3 + freq4')
-%         rf5 = fitrensemble(trainTable, ...
-%             'SBP ~ P1 + P2 + T1 + T2 + b_a + kurt + skew + SD + freq1 + freq2 + freq3 + freq4 + W1 + W2')
-%         rf6 = fitrensemble(trainTable, ...
-%             'SBP ~ P1 + P2 + T1 + T2 + kurt + skew + SD + freq1 + freq2 + freq3 + freq4 + W1 + W2')
-        rf1 = fitrensemble(trainTable, ...
-            'SBP ~ P1 + P2 + T1 + T2 + kurt + skew + SD + freq1 + freq2 + freq3 + freq4 + W1 + W2')
-        rf2 = fitrensemble(trainTable, ...
-            'SBP ~ P1 + P2 + T1 + T2 + kurt + skew + SD + freq1 + freq2 + freq3 + freq4 + W1 + W2 + PulseWidth')
-    end
-    
-    % physical models
-    %Ding2017 with PTT substituted
-    %combination of esmaili and Hu
     
     
-    % make a decision here for best model?
-    %  https://stats.stackexchange.com/questions/250277/are-mixed-models-useful-as-predictive-models
-    % comparison of results: file:///C:/Users/vince/AppData/Local/Temp/Folien_Schaetzverfahren_und_Modellvergleiche.pdf
-    
-    
-    %% Report results
-    
-    % could also create struct beforehand
-    
-    
-    % get names of all models
-    s = whos;
-    myModels = [];
-    %matches = false(size(s,1),size(s,2))'; % does not make sense anyway
-    if(any(ismember(modelTypes(:,1),'LinearMixedModel')))
-        idx = find(ismember(modelTypes(:,1),'LinearMixedModel'));
-        %matches = matches | strcmp({s.class}, modelTypes{idx,2});
-        matches = strcmp({s.class}, modelTypes{idx,2});
-        myModels = [myModels,[{s(matches).name};repmat({'LinearMixedModel'},1,numel(matches(matches==true)))]];
-    end
-    if(any(ismember(modelTypes(:,1),'LinearModel')))
-        idx = find(ismember(modelTypes(:,1),'LinearModel'));
-        %matches = matches | strcmp({s.class}, modelTypes{idx,2});
-        matches = strcmp({s.class}, modelTypes{idx,2});
-        myModels = [myModels,[{s(matches).name};repmat({'LinearModel'},1,numel(matches(matches==true)))]];
-    end
-    if(any(ismember(modelTypes(:,1),'RandomForest')))
-        idx = find(ismember(modelTypes(:,1),'RandomForest'));
-        %matches = matches | strcmp({s.class}, modelTypes{idx,2});
-        matches = strcmp({s.class}, modelTypes{idx,2});
-        myModels = [myModels,[{s(matches).name};repmat({'RandomForest'},1,numel(matches(matches==true)))]];
-    end
-    %myModels = {s(matches).name};
-    
-    % store all model information in a struct
-    modelResults = struct;
-    for actualModel = 1:size(myModels,2)
-        modelResults.(myModels{2,actualModel}).(myModels{1,actualModel}) = eval(myModels{1,actualModel});
-    end
-    
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % maybe choose best model? --> make this optional
-    % which criterion to choose?
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    
-    % save model
+    % save tables --> % also simply save subject split?
     if(mixDatasets)
-        save([resultsFolderBase 'dataTables.mat'],'trainTable','testTable')
-        save([resultsFolder 'modelResults.mat'],'modelResults');
+        save([tableDir 'dataTables.mat'],'trainTable','testTable');
     else
-        save([resultsFolder 'modelResults.mat'],'modelResults','trainTable','categoricalVars');
+        save([resultsFolder 'modelResults.mat'],'trainTable','categoricalVars'); % TODO: welche ariablen, wo speichern? Erstmal streichen, dass datasets getrennt betrachtet werden?
     end
 end
 end
