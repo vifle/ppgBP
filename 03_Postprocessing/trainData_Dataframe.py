@@ -164,66 +164,85 @@ for _,currentDataSplit in enumerate(dataSplit):
             plt.savefig(path.join(filePath,"groundTruth_prediction.pdf"))
             plt.close()
             
+            
 
-            # predict on smoothed BP
+            # predict on smoothed BP & smoothed features (Hu method)
             # create new dataframes (deepcopys of existing train and test)
-            trainSmooth = train.copy()
-            trainIDArray = train["ID"].unique()
-            trainTargetSmooth = np.ravel(train[train.columns.intersection(desiredTargetList)].to_numpy())
+            train_smB = train.copy()
+            trainIDArray = train_smB["ID"].unique()
+            trainPredictors_smB = train_smB[train_smB.columns.intersection(desiredPredictors)]
+            trainTarget_smB = np.ravel(train_smB[train_smB.columns.intersection(desiredTargetList)].to_numpy())
             for _,currentID in enumerate(trainIDArray):
-                indicesID = trainSmooth.index[train["ID"]==currentID]
+                indicesID = train_smB.index[train_smB["ID"]==currentID]
                 if('unisens' in currentID):
                     ks = 5
                 else:
                     ks = 1
-                trainTargetSmooth[indicesID] = sig.medfilt(trainTargetSmooth[indicesID],kernel_size=ks)
-            testSmooth = test.copy()
-            testIDArray = test["ID"].unique()
-            testTargetSmooth = np.ravel(test[test.columns.intersection(desiredTargetList)].to_numpy())
+                trainTarget_smB[indicesID] = sig.medfilt(trainTarget_smB[indicesID],kernel_size=ks)
+                trainPredictors_smB.loc[indicesID,:] = sig.medfilt2d(trainPredictors_smB.to_numpy()[indicesID,:],kernel_size=[ks,1])
+            test_smB = test.copy()
+            testIDArray = test_smB["ID"].unique()
+            testPredictors_smB = test_smB[test_smB.columns.intersection(desiredPredictors)]
+            testTarget_smB = np.ravel(test_smB[test_smB.columns.intersection(desiredTargetList)].to_numpy())
             for _,currentID in enumerate(testIDArray):
-                indicesID = testSmooth.index[test["ID"]==currentID]
+                indicesID = test_smB.index[test_smB["ID"]==currentID]
                 if('unisens' in currentID):
                     ks = 5
                 else:
                     ks = 1
-                testTarget[indicesID] = sig.medfilt(testTarget[indicesID],kernel_size=ks)
+                testTarget_smB[indicesID] = sig.medfilt(testTarget_smB[indicesID],kernel_size=ks)
+                testPredictors_smB.loc[indicesID,:] = sig.medfilt2d(testPredictors_smB.to_numpy()[indicesID,:],kernel_size=[ks,1])
             # need to train new model
-            regrModelSmooth = xgboost.XGBRegressor().fit(trainPredictors,trainTargetSmooth)
-            predictionSmoothBefore = regrModelSmooth.predict(testPredictors)
-            MAEbefore = metr.mean_absolute_error(testTargetSmooth,predictionSmoothBefore)
+            regrModel_smB = xgboost.XGBRegressor().fit(trainPredictors_smB,trainTarget_smB)
+            prediction_smB = regrModel_smB.predict(testPredictors_smB)
+            
+            
             
             # smoothing afterwards
             testIDArray = test["ID"].unique()
-            predictionSmooth = np.zeros((np.size(prediction)))
-            groundTruthSmooth = np.zeros((np.size(testTarget)))
+            prediction_smA = np.zeros((np.size(prediction)))
+            testTarget_smA = np.zeros((np.size(testTarget)))
             for _,currentID in enumerate(testIDArray):
                 indicesID = test.index[test["ID"]==currentID]
                 if('unisens' in currentID):
                     ks = 5
                 else:
                     ks = 1
-                predictionSmooth[indicesID] = sig.medfilt(prediction[indicesID],kernel_size=ks)
-                groundTruthSmooth[indicesID] = sig.medfilt(testTarget[indicesID],kernel_size=ks)
-            plotblandaltman(groundTruthSmooth,predictionSmooth,path.join(filePath,"blandAltmanSmooth.pdf"))
+                prediction_smA[indicesID] = sig.medfilt(prediction[indicesID],kernel_size=ks)
+                testTarget_smA[indicesID] = sig.medfilt(testTarget[indicesID],kernel_size=ks)
+            plotblandaltman(testTarget_smA,prediction_smA,path.join(filePath,"blandAltmanSmooth.pdf"))
             plt.figure()
-            plt.plot(groundTruthSmooth)
-            plt.plot(predictionSmooth)
+            plt.plot(testTarget_smA)
+            plt.plot(prediction_smA)
             plt.savefig(path.join(filePath,"groundTruth_predictionSmooth.pdf"))
             plt.close()
+            
+            
+            # TODO: change names of all those smooth stuff
+            
             
             if calcEval:
                 # evaluate prediction
                 mae = metr.mean_absolute_error(testTarget,prediction) # MAE
                 me = np.mean(testTarget - prediction) # ME
+                rmse = metr.mean_squared_error(testTarget,prediction,squared=False) # RMSE
                 sd = np.std(testTarget - prediction) # SD
                 rPearson = np.corrcoef(np.ravel(testTarget),prediction)[0,1] # correlation coefficient (Pearson)
                 rSpearman,_ = stats.spearmanr(np.ravel(testTarget),prediction) # correlation coefficient (Spearman)
-                # evaluate smoothed prediction
-                maeSmooth = metr.mean_absolute_error(groundTruthSmooth,predictionSmooth) # MAE
-                meSmooth = np.mean(groundTruthSmooth - predictionSmooth) # ME
-                sdSmooth = np.std(groundTruthSmooth - predictionSmooth) # SD
-                rPearsonSmooth = np.corrcoef(np.ravel(groundTruthSmooth),predictionSmooth)[0,1] # correlation coefficient (Pearson)
-                rSpearmanSmooth,_ = stats.spearmanr(np.ravel(groundTruthSmooth),predictionSmooth) # correlation coefficient (Spearman)
+                # evaluate Hu method
+                mae_smB = metr.mean_absolute_error(testTarget_smB,prediction_smB) # MAE
+                me_smB = np.mean(testTarget_smB - prediction_smB) # ME
+                rmse_smB = metr.mean_squared_error(testTarget_smB,prediction_smB,squared=False) # RMSE
+                sd_smB = np.std(testTarget_smB - prediction_smB) # SD
+                rPearson_smB = np.corrcoef(np.ravel(testTarget_smB),prediction_smB)[0,1] # correlation coefficient (Pearson)
+                rSpearman_smB,_ = stats.spearmanr(np.ravel(testTarget_smB),prediction_smB) # correlation coefficient (Spearman)
+                # evaluate smoothing afterwards
+                mae_smA = metr.mean_absolute_error(testTarget_smA,prediction_smA) # MAE
+                me_smA = np.mean(testTarget_smA - prediction_smA) # ME
+                rmse_smA = metr.mean_squared_error(testTarget_smA,prediction_smA,squared=False) # RMSE
+                sd_smA = np.std(testTarget_smA - prediction_smA) # SD
+                rPearson_smA = np.corrcoef(np.ravel(testTarget_smA),prediction_smA)[0,1] # correlation coefficient (Pearson)
+                rSpearman_smA,_ = stats.spearmanr(np.ravel(testTarget_smA),prediction_smA) # correlation coefficient (Spearman)
                 # create dict from metrics
                 evalResults = {
                     'dataSplit':currentDataSplit,
@@ -232,16 +251,23 @@ for _,currentDataSplit in enumerate(dataSplit):
                     'predictors':desiredPredictors,
                     'targets':desiredTargetList,
                     'MAE':mae,
-                    'MAEsm':maeSmooth,
-                    'MAEbefore':MAEbefore,
+                    'MAE_smA':mae_smA,
+                    'MAE_smB':mae_smB,
                     'ME':me,
-                    'MEsm':meSmooth,
+                    'ME_smA':me_smA,
+                    'ME_smB':me_smB,
+                    'RMSE':rmse,
+                    'RMSE_smA':rmse_smA,
+                    'RMSE_smB':rmse_smB,
                     'SD':sd,
-                    'SDsm':sdSmooth,
+                    'SD_smA':sd_smA,
+                    'SD_smB':sd_smB,
                     'CorrPearson':rPearson,
-                    'CorrPearsonsm':rPearsonSmooth,
+                    'CorrPearson_smA':rPearson_smA,
+                    'CorrPearson_smB':rPearson_smB,
                     'CorrSpearman':rSpearman,
-                    'CorrSpearmansm':rSpearmanSmooth,
+                    'CorrSpearman_smA':rSpearman_smA,
+                    'CorrSpearman_smB':rSpearman_smB,
                     'FeatureImportance':dict(zip(regrModel.get_booster().feature_names,regrModel.feature_importances_))
                     }
                 # save prediction and metrics in pickle files
