@@ -294,6 +294,8 @@ else
     numExclusions = numExclusions(:,LOCB);
 end
 
+% optional: do normalization
+
 % calculate beatsRemaining
 beatsRemaining = array2table(table2array(beatsRemaining) - exclusionsExtraction,'VariableNames',algorithms);
 
