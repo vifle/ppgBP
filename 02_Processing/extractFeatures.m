@@ -165,7 +165,11 @@ for actualAlgorithm = 1:numAlg % only for convenience (debugging)
                     featureTableLong.ID(i,1) = physiologicalMeasuresTable.SubjectID(actualSubject);
                     featureTableLong.Beat(i,1) = categorical(actualBeat);
                     % get meta data
-                    featureTableLong.Sex(i,1) = physiologicalMeasuresTable.Sex_M_F_(actualSubject);
+                    if(~isnan(physiologicalMeasuresTable.Sex_M_F_(actualSubject)))
+                        featureTableLong.Sex(i,1) = physiologicalMeasuresTable.Sex_M_F_(actualSubject);
+                    else
+                        featureTableLong.Sex(i,1) = {'unknown'};
+                    end
                     featureTableLong.Age(i,1) = physiologicalMeasuresTable.Age_year_(actualSubject);
                     featureTableLong.Height(i,1) = physiologicalMeasuresTable.Height_cm_(actualSubject);
                     featureTableLong.Weight(i,1) = physiologicalMeasuresTable.Weight_kg_(actualSubject);
@@ -294,7 +298,11 @@ else
     numExclusions = numExclusions(:,LOCB);
 end
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % optional: do normalization
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 % calculate beatsRemaining
 beatsRemaining = array2table(table2array(beatsRemaining) - exclusionsExtraction,'VariableNames',algorithms);

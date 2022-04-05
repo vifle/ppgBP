@@ -231,9 +231,17 @@ for actualAlgorithm = 1:size(algorithms,1)
         trainTable = tableCollection{strcmp(algorithms{actualAlgorithm},tableCollection(:,1)),2};
     end
     
-    % exclude measurements
+    % exclude measurements --> TODO: only delete if relevant information is
+    % missing; could make exception; muss das mixedTable in ismissing
+    % indizieren, sodass nicht die gesamte Tabelle eingeht
+    % https://www.mathworks.com/help/matlab/matlab_prog/access-data-in-a-table.html
+    % T{:,["A","B"]}
+    % --> need to know either all relevant features or all irrelevant ones
     if(mixDatasets)
-        mixedTable(any(ismissing(mixedTable),2),:) = [];
+        %mixedTable(any(ismissing(mixedTable),2),:) = [];
+        mixedTable(any(ismissing(mixedTable{:,["SBP","P1","P2","T1","T2", ...
+            "kurt","skew","SD","freq1","freq2","freq3","freq4","W1","W2", ...
+            "PulseWidth","b_a"]}),2),:) = [];
     else
         trainTable(any(ismissing(trainTable),2),:) = [];
     end
@@ -319,9 +327,7 @@ for actualAlgorithm = 1:size(algorithms,1)
 %         rf6 = fitrensemble(trainTable, ...
 %             'SBP ~ P1 + P2 + T1 + T2 + kurt + skew + SD + freq1 + freq2 + freq3 + freq4 + W1 + W2')
         rf1 = fitrensemble(trainTable, ...
-            'SBP ~ P1 + P2 + T1 + T2 + kurt + skew + SD + freq1 + freq2 + freq3 + freq4 + W1 + W2')
-        rf2 = fitrensemble(trainTable, ...
-            'SBP ~ P1 + P2 + T1 + T2 + kurt + skew + SD + freq1 + freq2 + freq3 + freq4 + W1 + W2 + PulseWidth')
+            'SBP ~ P1 + P2 + T1 + T2 + kurt + skew + SD + freq1 + freq2 + freq3 + freq4 + W1 + W2 + PulseWidth + b_a')
     end
     
     % physical models

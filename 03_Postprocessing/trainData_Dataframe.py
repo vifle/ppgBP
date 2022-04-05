@@ -13,6 +13,7 @@ import getpass
 import os.path as path
 from datetime import datetime
 from plotting import plotblandaltman
+from plotting import plotComparison
 
 ##############################################
 #
@@ -71,6 +72,12 @@ measureTime = True
 calcShap = True
 loadModel = False
 calcEval = True
+doWeights = True
+mixSet = 'CPTFULL_QueenslandFULL'
+
+### setup weights
+wMultiplyer = 0.51#4
+thresholdMultiplyer = 0.35#0.75
 
 ### use PPGI data
 ppgi = ['with','without']
@@ -78,12 +85,13 @@ ppgi = ['with','without']
 ### define relevant dataset dir (dependent on user)
 username = getpass.getuser()
 if(username=='Vincent Fleischhauer'): # desktop path
-    datasetBaseDir = path.abspath("X:\FleischhauerVincent\sciebo_appendix\Forschung\Konferenzen\Paper_PPG_BP\Data\Datasets\CPTFULL_PPG_BPSUBSET")
+    datasetBaseDir = path.abspath("X:\FleischhauerVincent\sciebo_appendix\Forschung\Konferenzen\Paper_PPG_BP\Data\Datasets")
 elif(username=='vince'): # laptop path
-    datasetBaseDir = path.abspath("Y:\FleischhauerVincent\sciebo_appendix\Forschung\Konferenzen\Paper_PPG_BP\Data\Datasets\CPTFULL_PPG_BPSUBSET")
+    datasetBaseDir = path.abspath("Y:\FleischhauerVincent\sciebo_appendix\Forschung\Konferenzen\Paper_PPG_BP\Data\Datasets")
 else: # print error message and abort function
     print('User not known, analysis stopped.')
     quit()
+datasetBaseDir = path.join(datasetBaseDir,mixSet)
 
 ### define split of data
 dataSplit = ['interSubject','intraSubject']
@@ -146,7 +154,11 @@ for _,currentDataSplit in enumerate(dataSplit):
             
             modelFilePath = path.join(filePath,"regrModel.pkl")
             if not loadModel:
-                regrModel = xgboost.XGBRegressor().fit(trainPredictors,trainTarget)
+                w = np.ones((trainTarget.size))# w dependent on target vector (larger than 1 above certain level, 2 for highest 20% of data)
+                if doWeights:
+                    threshold = thresholdMultiplyer*max(trainTarget)
+                    w[trainTarget>threshold] = wMultiplyer
+                regrModel = xgboost.XGBRegressor().fit(trainPredictors,trainTarget,sample_weight=w)
                 # https://stats.stackexchange.com/questions/457483/sample-weights-in-xgbclassifier
                 # use sample_weight option to emphasize specific subjects with less common BP values
                 pickle.dump(regrModel, open(modelFilePath, 'wb'))
@@ -158,11 +170,7 @@ for _,currentDataSplit in enumerate(dataSplit):
             # predict on test data
             prediction = regrModel.predict(testPredictors)
             plotblandaltman(testTarget,prediction,path.join(filePath,"blandAltman.pdf"))
-            plt.figure()
-            plt.plot(testTarget)
-            plt.plot(prediction)
-            plt.savefig(path.join(filePath,"groundTruth_prediction.pdf"))
-            plt.close()
+            plotComparison(prediction,testTarget,path.join(filePath,"groundTruth_prediction.pdf"))
             
             
 
@@ -193,7 +201,11 @@ for _,currentDataSplit in enumerate(dataSplit):
                 testTarget_smB[indicesID] = sig.medfilt(testTarget_smB[indicesID],kernel_size=ks)
                 testPredictors_smB.loc[indicesID,:] = sig.medfilt2d(testPredictors_smB.to_numpy()[indicesID,:],kernel_size=[ks,1])
             # need to train new model
-            regrModel_smB = xgboost.XGBRegressor().fit(trainPredictors_smB,trainTarget_smB)
+            w_smB = np.ones((trainTarget_smB.size))# w dependent on target vector (larger than 1 above certain level, 2 for highest 20% of data)
+            if doWeights:
+                threshold_smB = thresholdMultiplyer*max(trainTarget_smB)
+                w_smB[trainTarget_smB>threshold] = wMultiplyer
+            regrModel_smB = xgboost.XGBRegressor().fit(trainPredictors_smB,trainTarget_smB,sample_weight=w_smB)
             prediction_smB = regrModel_smB.predict(testPredictors_smB)
             
             
@@ -211,11 +223,7 @@ for _,currentDataSplit in enumerate(dataSplit):
                 prediction_smA[indicesID] = sig.medfilt(prediction[indicesID],kernel_size=ks)
                 testTarget_smA[indicesID] = sig.medfilt(testTarget[indicesID],kernel_size=ks)
             plotblandaltman(testTarget_smA,prediction_smA,path.join(filePath,"blandAltmanSmooth.pdf"))
-            plt.figure()
-            plt.plot(testTarget_smA)
-            plt.plot(prediction_smA)
-            plt.savefig(path.join(filePath,"groundTruth_predictionSmooth.pdf"))
-            plt.close()
+            plotComparison(prediction_smA,testTarget_smA,path.join(filePath,"groundTruth_predictionSmooth.pdf"))
             
             
             # TODO: change names of all those smooth stuff

@@ -1,4 +1,4 @@
-function[] = convertTable2CSV()
+function[] = convertTable2CSV(datasetString)
 
 % get path to datasets
 if(strcmp(getenv('username'),'vince'))
@@ -14,7 +14,11 @@ baseDatasetDir = [networkDrive,'\FleischhauerVincent\sciebo_appendix\Forschung\K
 mixMode = {'interSubject';'intraSubject'};
 ppgi = {'withPPGI';'withoutPPGI'};
 % loop over all tables
-dataset = ['CPTFULL_PPG_BPSUBSET\'];
+dataset = [];
+for currentDataset = 1:size(datasetString,1)
+    dataset = [dataset datasetString{currentDataset,1} datasetString{currentDataset,2} '_'];
+end
+dataset(end) = [];
 for currentMode = 1:size(mixMode,1)
     for currentPPGI = 1:size(ppgi,1)
         matlabDir = [baseDatasetDir dataset '\' mixMode{currentMode} '\' ppgi{currentPPGI} '\'];

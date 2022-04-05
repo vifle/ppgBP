@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import matplotlib.patches as patch
 import numpy as np
 plt.style.use('ggplot')
 
@@ -48,3 +49,28 @@ def plotblandaltman(x,y,name,title = None,sd_limit = 1.96):
     # plt.axhline(md,           color='gray', linestyle='--')
     # plt.axhline(md + 1.96*sd, color='gray', linestyle='--')
     # plt.axhline(md - 1.96*sd, color='gray', linestyle='--')
+    
+def plotComparison(prediction,groundTruth,name,subjects=[],plotPatches=False):
+    plt.figure()
+    plt.plot(prediction,label='prediction',linewidth=0.5)
+    plt.plot(groundTruth,label='ground truth',linewidth=0.5)
+    plt.xlabel('sample')
+    plt.ylabel('blood pressure / mmHg')
+    plt.legend()
+    if plotPatches:
+        patchStart = 0
+        for idxSubject,_ in enumerate(subjects):
+            if(idxSubject%2 == 0):
+                colorPatch = 'g'
+            else:
+                colorPatch = 'w'
+            # find number of samples of subject
+            # NOTE: camera estimates are at end of array, but have same identifier
+            
+            #idx = find(evaluationResults.testTable.ID==testSubs(currentSubject));
+            
+            #patchEnd = patchStart + length(idx)-1;
+            #plt.axvspan(patchStart, patchEnd, facecolor=colorPatch, alpha=0.25)
+            #patchStart = patchEnd+1      
+    plt.savefig(name, bbox_inches = 'tight', pad_inches = 0)
+    plt.close()

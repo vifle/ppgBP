@@ -1,4 +1,4 @@
-function [randomState] = trainModels(baseDatasetDir,fromDir,toDir,mixDatasets,intraSubjectMix,mixHu,includePPGI,PPGIdir,modelTypes,portionTraining,dataset,randomState)
+function [randomState] = trainModelsOLD(baseDatasetDir,fromDir,toDir,mixDatasets,intraSubjectMix,mixHu,includePPGI,PPGIdir,modelTypes,portionTraining,dataset,randomState)
 %% TODO
 % Namen der Tabelle überarbeiten und an andere Daten anpassen
 % wie gut ist varianz erklärt? R^2 ansehen

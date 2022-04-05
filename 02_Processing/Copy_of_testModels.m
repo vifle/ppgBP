@@ -1,4 +1,4 @@
-function[] = testModels(baseDatasetDir,fromDir,toDir,doDummyError,doVisualization,modelTypes,mixDatasets,intraSubjectMix,includePPGI,set)
+function[] = testModelsOLD(baseDatasetDir,fromDir,toDir,doDummyError,doVisualization,modelTypes,mixDatasets,intraSubjectMix,includePPGI,set)
 %% TODO
 % do visualisation
 % put this into trainModels and put all of it into an optional part that is

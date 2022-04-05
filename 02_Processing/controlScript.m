@@ -45,76 +45,14 @@ if(doDecomposition)
     settings.Decomposition.doExclusion = false;
     settings.Decomposition.extractFullDataset = true;
     settings.Decomposition.nrmseThreshold = 0.4;
-    settings.Decomposition.dataset ='CPT';
-    settings.Decomposition.algorithmsFile = 'algorithmsBPestimationTEST';
-    % settings only for subset
-    settings.Decomposition.extractPPGIsingles = false;
-    settings.Decomposition.extractPPGIensemble = true;
-
-    % dirs
-    settings.Decomposition.toDir = '2022_02_20'; % ending of dir to which data will be saved
-
-    % execute function that stores settings
-    storeSettings(baseDatasetDir,settings);
-
-    % execute function
-    decomposeRealData(baseDatasetDir,settings.Decomposition.toDir,settings.Decomposition.doExclusion, ...
-        settings.Decomposition.algorithmsFile,settings.Decomposition.extractFullDataset,...
-        settings.Decomposition.nrmseThreshold,settings.Decomposition.dataset, ...
-        settings.Decomposition.extractPPGIsingles,settings.Decomposition.extractPPGIensemble)
-
-    % remove current settings
-    settings = rmfield(settings,'Decomposition');
-    
-end
-
-%% decomposeRealData
-if(doDecomposition)
-    settings.Decomposition = struct;
-    
-    % settings
-    settings.Decomposition.doExclusion = false;
-    settings.Decomposition.extractFullDataset = false;
-    settings.Decomposition.nrmseThreshold = 0.4;
-    settings.Decomposition.dataset ='CPT';
-    settings.Decomposition.algorithmsFile = 'algorithmsBPestimationTEST';
-    % settings only for subset
-    settings.Decomposition.extractPPGIsingles = false;
-    settings.Decomposition.extractPPGIensemble = true;
-
-    % dirs
-    settings.Decomposition.toDir = '2022_02_20'; % ending of dir to which data will be saved
-
-    % execute function that stores settings
-    storeSettings(baseDatasetDir,settings);
-
-    % execute function
-    decomposeRealData(baseDatasetDir,settings.Decomposition.toDir,settings.Decomposition.doExclusion, ...
-        settings.Decomposition.algorithmsFile,settings.Decomposition.extractFullDataset,...
-        settings.Decomposition.nrmseThreshold,settings.Decomposition.dataset, ...
-        settings.Decomposition.extractPPGIsingles,settings.Decomposition.extractPPGIensemble)
-
-    % remove current settings
-    settings = rmfield(settings,'Decomposition');
-    
-end
-
-%% decomposeRealData
-if(doDecomposition)
-    settings.Decomposition = struct;
-    
-    % settings
-    settings.Decomposition.doExclusion = false;
-    settings.Decomposition.extractFullDataset = false;
-    settings.Decomposition.nrmseThreshold = 0.4;
-    settings.Decomposition.dataset ='PPG_BP';
+    settings.Decomposition.dataset ='Queensland';
     settings.Decomposition.algorithmsFile = 'algorithmsBPestimationTEST';
     % settings only for subset
     settings.Decomposition.extractPPGIsingles = false;
     settings.Decomposition.extractPPGIensemble = false;
 
     % dirs
-    settings.Decomposition.toDir = '2022_02_20'; % ending of dir to which data will be saved
+    settings.Decomposition.toDir = '2022_03_10'; % ending of dir to which data will be saved
 
     % execute function that stores settings
     storeSettings(baseDatasetDir,settings);
@@ -130,22 +68,84 @@ if(doDecomposition)
     
 end
 
+% %% decomposeRealData
+% if(doDecomposition)
+%     settings.Decomposition = struct;
+%     
+%     % settings
+%     settings.Decomposition.doExclusion = false;
+%     settings.Decomposition.extractFullDataset = false;
+%     settings.Decomposition.nrmseThreshold = 0.4;
+%     settings.Decomposition.dataset ='CPT';
+%     settings.Decomposition.algorithmsFile = 'algorithmsBPestimationTEST';
+%     % settings only for subset
+%     settings.Decomposition.extractPPGIsingles = false;
+%     settings.Decomposition.extractPPGIensemble = true;
+% 
+%     % dirs
+%     settings.Decomposition.toDir = '2022_02_20'; % ending of dir to which data will be saved
+% 
+%     % execute function that stores settings
+%     storeSettings(baseDatasetDir,settings);
+% 
+%     % execute function
+%     decomposeRealData(baseDatasetDir,settings.Decomposition.toDir,settings.Decomposition.doExclusion, ...
+%         settings.Decomposition.algorithmsFile,settings.Decomposition.extractFullDataset,...
+%         settings.Decomposition.nrmseThreshold,settings.Decomposition.dataset, ...
+%         settings.Decomposition.extractPPGIsingles,settings.Decomposition.extractPPGIensemble)
+% 
+%     % remove current settings
+%     settings = rmfield(settings,'Decomposition');
+%     
+% end
+% 
+% %% decomposeRealData
+% if(doDecomposition)
+%     settings.Decomposition = struct;
+%     
+%     % settings
+%     settings.Decomposition.doExclusion = false;
+%     settings.Decomposition.extractFullDataset = false;
+%     settings.Decomposition.nrmseThreshold = 0.4;
+%     settings.Decomposition.dataset ='PPG_BP';
+%     settings.Decomposition.algorithmsFile = 'algorithmsBPestimationTEST';
+%     % settings only for subset
+%     settings.Decomposition.extractPPGIsingles = false;
+%     settings.Decomposition.extractPPGIensemble = false;
+% 
+%     % dirs
+%     settings.Decomposition.toDir = '2022_02_20'; % ending of dir to which data will be saved
+% 
+%     % execute function that stores settings
+%     storeSettings(baseDatasetDir,settings);
+% 
+%     % execute function
+%     decomposeRealData(baseDatasetDir,settings.Decomposition.toDir,settings.Decomposition.doExclusion, ...
+%         settings.Decomposition.algorithmsFile,settings.Decomposition.extractFullDataset,...
+%         settings.Decomposition.nrmseThreshold,settings.Decomposition.dataset, ...
+%         settings.Decomposition.extractPPGIsingles,settings.Decomposition.extractPPGIensemble)
+% 
+%     % remove current settings
+%     settings = rmfield(settings,'Decomposition');
+%     
+% end
+
 %% extractFeatures
 % for subset this function can only handle one data class at a time (i.e.
 % you need 2 calls of this function to 
 if(doFeatureExtraction)
     % settings
-    settings.Features.extractFullDataset = false;
+    settings.Features.extractFullDataset = true;
     settings.Features.usePreviousResults = false;
-    settings.Features.dataset ='CPT';
+    settings.Features.dataset ='Queensland';
     % settings.Features.metaDataFeatures = {'ID';'Beat';'Sex';'Age';'Height';'Weight';'SBP';'DBP';'PP';'TPR'}; % add RR
     settings.Features.metaDataFeatures = {'ID';'Beat';'Sex';'Age';'Height';'Weight';'SBP';'DBP';'PP'}; % add RR % add epoch?
     % settings only for subset
-    settings.Features.dataClass ='ppgiEnsemble'; % ppg, ppgiSingles, ppgiEnsemble
+    settings.Features.dataClass ='ppg'; % ppg, ppgiSingles, ppgiEnsemble
 
     % dirs
-    settings.Features.fromDir = '2022_02_20'; % ending of dir from which data should be used as input
-    settings.Features.toDir = '2022_02_20'; % ending of dir to which data will be saved
+    settings.Features.fromDir = '2022_03_10'; % ending of dir from which data should be used as input
+    settings.Features.toDir = '2022_03_10'; % ending of dir to which data will be saved
 
     % execute function that stores settings
     storeSettings(baseDatasetDir,settings);
@@ -183,7 +183,9 @@ if(doTraining)
     modelTypes = {'RandomForest','classreg.learning.regr.RegressionEnsemble'};
     portionTraining = 0.8;
     if(mixDatasets)
-        dataset = {'CPT','FULL';'PPG_BP','SUBSET'};
+        %dataset = {'CPT','FULL';'PPG_BP','SUBSET'};
+        dataset = {'CPT','FULL';'Queensland','FULL'};
+        %dataset = {'Queensland','FULL';'PPG_BP','SUBSET'};
     else
         dataset = {'CPT','FULL'};
         %dataset = {'PPG_BP','SUBSET'};
@@ -191,7 +193,7 @@ if(doTraining)
 
     % dirs
     fromDir = '2022_02_21'; % ending of dir from which data should be used as input
-    toDir = '2022_02_22'; % ending of dir to which data will be saved
+    toDir = '2022_03_15'; % ending of dir to which data will be saved
 
     % execute function
     trainModels(baseDatasetDir,fromDir,toDir,mixDatasets,intraSubjectMix(currentRun), ...
@@ -200,7 +202,7 @@ if(doTraining)
     
     % convert data tables
     addpath('..\03_Postprocessing');
-    convertTable2CSV();
+    convertTable2CSV(dataset);
     
 end
 
@@ -217,7 +219,9 @@ if(doTesting)
     intraSubjectMix = [true,true,false,false];
     includePPGI = [true,false,true,false];
     if(mixDatasets)
-        set = 'CPTFULL_PPG_BPSUBSET';
+        %set = 'CPTFULL_PPG_BPSUBSET';
+        set = 'CPTFULL_QueenslandFULL';
+        %set = 'QueenslandFULL_PPG_BPSUBSET';
     else
         set = {{'CPT';'FULL'},{'PPG_BP';'SUBSET'}};
         %     testSet = {'CPT';'FULL'};
@@ -225,8 +229,8 @@ if(doTesting)
     end
 
     % dirs
-    fromDir = '2022_02_21'; % ending of dir from which data should be used as input
-    toDir = '2022_02_21'; % ending of dir to which data will be saved
+    fromDir = '2022_03_15'; % ending of dir from which data should be used as input
+    toDir = '2022_03_15'; % ending of dir to which data will be saved
 
     % execute function
     testModels(baseDatasetDir,fromDir,toDir,doDummyError,doVisualization,...
