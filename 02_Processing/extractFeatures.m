@@ -165,10 +165,14 @@ for actualAlgorithm = 1:numAlg % only for convenience (debugging)
                     featureTableLong.ID(i,1) = physiologicalMeasuresTable.SubjectID(actualSubject);
                     featureTableLong.Beat(i,1) = categorical(actualBeat);
                     % get meta data
-                    if(~isnan(physiologicalMeasuresTable.Sex_M_F_(actualSubject)))
-                        featureTableLong.Sex(i,1) = physiologicalMeasuresTable.Sex_M_F_(actualSubject);
+                    if(~iscell(physiologicalMeasuresTable.Sex_M_F_(actualSubject)))
+                        if(~isnan(physiologicalMeasuresTable.Sex_M_F_(actualSubject)))
+                            featureTableLong.Sex(i,1) = {physiologicalMeasuresTable.Sex_M_F_(actualSubject)};
+                        else
+                            featureTableLong.Sex(i,1) = {'unknown'};
+                        end
                     else
-                        featureTableLong.Sex(i,1) = {'unknown'};
+                        featureTableLong.Sex(i,1) = physiologicalMeasuresTable.Sex_M_F_(actualSubject);
                     end
                     featureTableLong.Age(i,1) = physiologicalMeasuresTable.Age_year_(actualSubject);
                     featureTableLong.Height(i,1) = physiologicalMeasuresTable.Height_cm_(actualSubject);

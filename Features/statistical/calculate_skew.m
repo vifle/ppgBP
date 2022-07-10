@@ -11,7 +11,7 @@ function [skew] = calculate_skew(PPGmod,PPGbeat,y,opt_params,algorithmName,freq)
 % skew              ...     sample skewness of PPGbeat
 
 %% exceptions
-if(any(isnan(PPGbeat)))
+if(any(isnan(PPGmod)))
     skew = NaN;
     return
 end

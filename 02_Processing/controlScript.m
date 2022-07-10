@@ -135,17 +135,17 @@ end
 % you need 2 calls of this function to 
 if(doFeatureExtraction)
     % settings
-    settings.Features.extractFullDataset = true;
+    settings.Features.extractFullDataset = false;
     settings.Features.usePreviousResults = false;
-    settings.Features.dataset ='Queensland';
+    settings.Features.dataset ='PPG_BP';
     % settings.Features.metaDataFeatures = {'ID';'Beat';'Sex';'Age';'Height';'Weight';'SBP';'DBP';'PP';'TPR'}; % add RR
     settings.Features.metaDataFeatures = {'ID';'Beat';'Sex';'Age';'Height';'Weight';'SBP';'DBP';'PP'}; % add RR % add epoch?
     % settings only for subset
     settings.Features.dataClass ='ppg'; % ppg, ppgiSingles, ppgiEnsemble
 
     % dirs
-    settings.Features.fromDir = '2022_03_10'; % ending of dir from which data should be used as input
-    settings.Features.toDir = '2022_03_10'; % ending of dir to which data will be saved
+    settings.Features.fromDir = '2022_02_21'; % ending of dir from which data should be used as input
+    settings.Features.toDir = '2022_04_05'; % ending of dir to which data will be saved
 
     % execute function that stores settings
     storeSettings(baseDatasetDir,settings);
@@ -176,7 +176,7 @@ if(doTraining)
     intraSubjectMix = [false,false,true,true]; % Bedeutung: Zufälliges Ziehen aus allen Schlägen
     mixHu = true; % Bedeutung: Zufääligen Ziehen aus allen Schlägen eines Probanden
     includePPGI = [false,true,false,true];
-    PPGIdir = 'Features\SUBSET\2022_02_21\';
+    PPGIdir = 'Features\SUBSET\2022_04_05\';
     % modelTypes = {'LinearMixedModel','LinearMixedModel'; ...
     %     'LinearModel','LinearModel';...
     %     'RandomForest','classreg.learning.regr.RegressionEnsemble'};
@@ -185,6 +185,7 @@ if(doTraining)
     if(mixDatasets)
         %dataset = {'CPT','FULL';'PPG_BP','SUBSET'};
         dataset = {'CPT','FULL';'Queensland','FULL'};
+        dataset = {'CPT','FULL';'Queensland','FULL';'PPG_BP','SUBSET'};
         %dataset = {'Queensland','FULL';'PPG_BP','SUBSET'};
     else
         dataset = {'CPT','FULL'};
@@ -192,8 +193,8 @@ if(doTraining)
     end
 
     % dirs
-    fromDir = '2022_02_21'; % ending of dir from which data should be used as input
-    toDir = '2022_03_15'; % ending of dir to which data will be saved
+    fromDir = '2022_04_05'; % ending of dir from which data should be used as input
+    toDir = '2022_04_05'; % ending of dir to which data will be saved
 
     % execute function
     trainModels(baseDatasetDir,fromDir,toDir,mixDatasets,intraSubjectMix(currentRun), ...
@@ -212,7 +213,7 @@ if(doTesting)
     for currentRun = 1:numRuns
     % settings
     doDummyError = {false,'SBP'}; % discards trained model for a comparison of test data with mean of trainings data, test data and all data --> each comparison is treated as a 'model'
-    doVisualization = {true,'','all',true,{true,'all'}}; % (1) true = plots are created; (2) 'singles' = figures for each subject separately; (3) 'all' = only combined figure; (4) true = background color divides subjects, (5) 'all' or cell containing chars that define features to be plottet with BP
+    doVisualization = {false,'','all',true,{true,'all'}}; % (1) true = plots are created; (2) 'singles' = figures for each subject separately; (3) 'all' = only combined figure; (4) true = background color divides subjects, (5) 'all' or cell containing chars that define features to be plottet with BP
     modelTypes = {'RandomForest'};
     %modelTypes = {'LinearMixedModel';'LinearModel';'RandomForest'};
     mixDatasets = true;
@@ -220,7 +221,8 @@ if(doTesting)
     includePPGI = [true,false,true,false];
     if(mixDatasets)
         %set = 'CPTFULL_PPG_BPSUBSET';
-        set = 'CPTFULL_QueenslandFULL';
+        set = 'CPTFULL_QueenslandFULL_PPG_BPSUBSET';
+        %set = 'CPTFULL_QueenslandFULL';
         %set = 'QueenslandFULL_PPG_BPSUBSET';
     else
         set = {{'CPT';'FULL'},{'PPG_BP';'SUBSET'}};
@@ -229,8 +231,8 @@ if(doTesting)
     end
 
     % dirs
-    fromDir = '2022_03_15'; % ending of dir from which data should be used as input
-    toDir = '2022_03_15'; % ending of dir to which data will be saved
+    fromDir = '2022_04_05'; % ending of dir from which data should be used as input
+    toDir = '2022_04_05'; % ending of dir to which data will be saved
 
     % execute function
     testModels(baseDatasetDir,fromDir,toDir,doDummyError,doVisualization,...

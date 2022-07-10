@@ -11,12 +11,12 @@ function [SD] = calculate_SD(PPGmod,PPGbeat,y,opt_params,algorithmName,freq)
 % SD                ...     standard deviation of PPGbeat
 
 %% exceptions
-if(any(isnan(PPGbeat)))
+if(any(isnan(PPGmod)))
     SD = NaN;
     return
 end
 
 %% calculate standard deviation
-SD = std(PPGbeat);
+SD = std(PPGmod);
 
 end

@@ -140,8 +140,12 @@ for actualAlgorithm = 1:size(algorithms,1)
             if(~intraSubjectMix)
                 rng(randomState); % restore random number generator state
                 charID = char(currentTable.ID);
-                allSubjects{currentDataset,actualAlgorithm} = unique(currentTable.ID); % only use first 3 as identifier (ensure strict separation for CPT)
-                helperAll = unique(categorical(cellstr(charID(:,1:3))));
+                allSubjects{currentDataset,actualAlgorithm} = unique(currentTable.ID); 
+                if(strcmp(dataset{currentDataset,1},'CPT'))
+                    helperAll = unique(categorical(cellstr(charID(:,1:3)))); % only use first 3 as identifier (ensure strict separation for CPT)
+                else
+                    helperAll = unique(categorical(cellstr(charID))); % use all chars as identifier
+                end
                 helperTrain = helperAll(randperm(numel(helperAll),round(portionTraining*numel(helperAll))));
                 trainSubjects{currentDataset,actualAlgorithm} = allSubjects{currentDataset,actualAlgorithm}(contains(string(allSubjects{currentDataset,actualAlgorithm}),string(helperTrain)));
                 testSubjects{currentDataset,actualAlgorithm} = setdiff(allSubjects{currentDataset,actualAlgorithm},trainSubjects{currentDataset,actualAlgorithm});

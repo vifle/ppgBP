@@ -12,8 +12,9 @@ import copy
 import getpass
 import os.path as path
 from datetime import datetime
-from plotting import plotblandaltman
 from plotting import plotComparison
+from pyCompare import blandAltman
+#from plotting import plotblandaltman
 
 
 # BUG: https://stackoverflow.com/questions/68257249/why-are-shap-values-changing-every-time-i-call-shap-plots-beeswarm
@@ -59,9 +60,9 @@ from plotting import plotComparison
 # include ppgi in evaluation (note: currently these are all separate data splits)
 
 ### setup for optimum search
-wList = [x for x in range(0, 1000, 25)] # eig 0 --> 1 für great range
+wList = [x for x in range(0, 1000, 50)] # eig 0 --> 1 für great range
 wList[:] = [x / 100 for x in wList]
-thresList = [x for x in range(0, 100, 10)] # eig 0 --> 5 für great range
+thresList = [x for x in range(30, 100, 10)] # eig 0 --> 5 für great range
 thresList[:] = [x / 100 for x in thresList]
 optResults = dict()
 
@@ -160,7 +161,7 @@ for thresholdMultiplyer in thresList:
                         
                     # predict on test data
                     prediction = regrModel.predict(testPredictors)
-                    plotblandaltman(testTarget,prediction,path.join(filePath,"blandAltman.pdf"))
+                    blandAltman(prediction,testTarget,savePath=path.join(filePath,"blandAltman.pdf"),figureFormat='pdf')
                     plotComparison(prediction,testTarget,path.join(filePath,"groundTruth_prediction.pdf"))
                     
                     
@@ -212,7 +213,7 @@ for thresholdMultiplyer in thresList:
                             ks = 1
                         prediction_smA[indicesID] = sig.medfilt(prediction[indicesID],kernel_size=ks)
                         testTarget_smA[indicesID] = sig.medfilt(testTarget[indicesID],kernel_size=ks)
-                    plotblandaltman(testTarget_smA,prediction_smA,path.join(filePath,"blandAltmanSmooth.pdf"))
+                    blandAltman(prediction_smA,testTarget_smA,savePath=path.join(filePath,"blandAltmanSmooth.pdf"),figureFormat='pdf')
                     plotComparison(prediction_smA,testTarget_smA,path.join(filePath,"groundTruth_predictionSmooth.pdf"))
                     
                     
@@ -293,10 +294,10 @@ for thresholdMultiplyer in thresList:
                         
                         # visualize the first prediction's explanation
                         #fig = shap.plots.waterfall(shap_values[0])
-                        fig = shap.plots.waterfall(copy.deepcopy(shap_values)[0])
-                        plt.savefig(path.join(filePath,"shapValuesFirst.pdf"), bbox_inches = 'tight', pad_inches = 0)
+                        #fig = shap.plots.waterfall(copy.deepcopy(shap_values)[0])
+                        #plt.savefig(path.join(filePath,"shapValuesFirst.pdf"), bbox_inches = 'tight', pad_inches = 0)
                         #tikz.save(filepath+'shapValuesFirst.tex')
-                        plt.close()
+                        #plt.close()
                         
                         # summarize the effects of all the features
                         #fig = shap.plots.beeswarm(shap_values) # changes shap values first column only for Gamma3generic?? 6th column for gg2g for with ppgi

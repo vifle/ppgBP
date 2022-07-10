@@ -11,12 +11,12 @@ function [kurt] = calculate_kurt(PPGmod,PPGbeat,y,opt_params,algorithmName,freq)
 % kurt              ...     sample kurtosis of PPGbeat
 
 %% exceptions
-if(any(isnan(PPGbeat)))
+if(any(isnan(PPGmod)))
     kurt = NaN;
     return
 end
 
 %% calculate kurtosis
-kurt = kurtosis(PPGbeat);
+kurt = kurtosis(PPGmod);
 
 end

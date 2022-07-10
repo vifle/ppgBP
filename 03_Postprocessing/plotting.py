@@ -32,6 +32,7 @@ def plotblandaltman(x,y,name,title = None,sd_limit = 1.96):
         plt.text(a.max()*0.85, mean_diff * 0.85, "Mean", color = "red", fontsize = "14")
         plt.ylim(lowerplot, upperplot)
         plt.scatter(x=a,y=b)
+        plt.grid(visible=False)
         plt.savefig(name, bbox_inches = 'tight', pad_inches = 0)
         plt.close()
             
@@ -50,13 +51,13 @@ def plotblandaltman(x,y,name,title = None,sd_limit = 1.96):
     # plt.axhline(md + 1.96*sd, color='gray', linestyle='--')
     # plt.axhline(md - 1.96*sd, color='gray', linestyle='--')
     
-def plotComparison(prediction,groundTruth,name,subjects=[],plotPatches=False):
+def plotComparison(prediction,groundTruth,name,subjects=[],plotPatches=False,yLimits=[None,None]):
     plt.figure()
     plt.plot(prediction,label='prediction',linewidth=0.5)
     plt.plot(groundTruth,label='ground truth',linewidth=0.5)
     plt.xlabel('sample')
     plt.ylabel('blood pressure / mmHg')
-    plt.legend()
+    #plt.legend()
     if plotPatches:
         patchStart = 0
         for idxSubject,_ in enumerate(subjects):
@@ -71,6 +72,26 @@ def plotComparison(prediction,groundTruth,name,subjects=[],plotPatches=False):
             
             #patchEnd = patchStart + length(idx)-1;
             #plt.axvspan(patchStart, patchEnd, facecolor=colorPatch, alpha=0.25)
-            #patchStart = patchEnd+1      
+            #patchStart = patchEnd+1  
+    if yLimits[0] is not None:
+        plt.ylim((yLimits[0], yLimits[1])) 
+    plt.grid(visible=False)
+    plt.savefig(name, bbox_inches = 'tight', pad_inches = 0)
+    plt.close()
+    
+def plotComparisonSub(prediction,groundTruth,name,subjects=[],yLimits=[None,None]):
+    fig, axs = plt.subplots(len(prediction))
+    for i in range(len(prediction)):
+        axs[i].plot(prediction[i],label='prediction',linewidth=0.5)
+        axs[i].plot(groundTruth[i],label='ground truth',linewidth=0.5)
+        #if yLimits[0] is not None:
+        #    axs[i].ylim((yLimits[0], yLimits[1])) 
+        axs[i].grid(visible=False)
+    if yLimits[0] is not None:
+        plt.setp(axs, ylim=yLimits)
+    #plt.xlabel('sample')
+    #plt.ylabel('blood pressure / mmHg')
+    fig.supxlabel('sample')
+    fig.supylabel('blood pressure / mmHg')
     plt.savefig(name, bbox_inches = 'tight', pad_inches = 0)
     plt.close()
