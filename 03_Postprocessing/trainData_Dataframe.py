@@ -116,7 +116,7 @@ doDependencePlots = True
 doDependenceInteractions = False
 dependencePlotFeatures= ['skew','SD','b/a','T2','T1','PulseWidth']
 
-mixSet = 'CPTFULL_QueenslandFULL_PPG_BPSUBSET_SBP'
+mixSet = 'CPTFULL_QueenslandFULL_PPG_BPSUBSET'
 
 ### setup weights
 wMultiplyer = 0.375#4#0.51 for NEWEST#4
@@ -132,6 +132,8 @@ if(username=='Vincent Fleischhauer'): # desktop path
     datasetBaseDir = path.abspath("X:\FleischhauerVincent\sciebo_appendix\Forschung\Konferenzen\Paper_PPG_BP\Data\Datasets")
 elif(username=='vince'): # laptop path
     datasetBaseDir = path.abspath("Y:\FleischhauerVincent\sciebo_appendix\Forschung\Konferenzen\Paper_PPG_BP\Data\Datasets")
+elif(username=='vifle001'): # new desktop path
+    datasetBaseDir = path.abspath("Z:\FleischhauerVincent\sciebo_appendix\Forschung\Konferenzen\Paper_PPG_BP\Data\Datasets")
 else: # print error message and abort function
     print('User not known, analysis stopped.')
     quit()

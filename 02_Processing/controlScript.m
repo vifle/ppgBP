@@ -21,7 +21,7 @@ clc
 %% choose steps to be executed
 doDecomposition = false;
 doFeatureExtraction = false;
-doTraining = true;
+doTraining = false;
 doTesting = true;
 
 %% get path to datasets
@@ -29,6 +29,8 @@ if(strcmp(getenv('username'),'vince'))
     networkDrive = 'Y:';
 elseif(strcmp(getenv('username'),'Vincent Fleischhauer'))
     networkDrive = 'X:';
+elseif(strcmp(getenv('username'),'vifle001'))
+    networkDrive = 'Z:';
 else
     errordlg('username not known')
 end

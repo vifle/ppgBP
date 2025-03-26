@@ -1,3 +1,4 @@
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.patches as patch
 import numpy as np
@@ -84,6 +85,21 @@ def plotComparisonSub(prediction,groundTruth,name,subjects=[],yLimits=[None,None
     for i in range(len(prediction)):
         axs[i].plot(prediction[i],label='prediction',linewidth=0.5)
         axs[i].plot(groundTruth[i],label='ground truth',linewidth=0.5)
+        if i==0 or i==1:
+            newLabels = axs[i].get_xticklabels()
+            newLabels[0].set_text('$\\mathdefault{-2000}$') #6,7,8,9
+            newLabels[1].set_text('$\\mathdefault{0}$') #6,7,8,9
+            newLabels[2].set_text('$\\mathdefault{2000}$') #6,7,8,9
+            newLabels[3].set_text('$\\mathdefault{4000}$') #6,7,8,9
+            newLabels[4].set_text('$\\mathdefault{6000}$') #6,7,8,9
+            newLabels[5].set_text('$\\mathdefault{8000}$') #6,7,8,9
+            newLabels[6].set_text('$\\mathdefault{10{,}000}$') #6,7,8,9
+            newLabels[7].set_text('$\\mathdefault{12{,}000}$') #6,7,8,9
+            newLabels[8].set_text('$\\mathdefault{14{,}000}$') #6,7,8,9
+            newLabels[9].set_text('$\\mathdefault{16{,}000}$') #6,7,8,9
+            axs[i].set_xticklabels(newLabels)
+        
+        # axs[i].xaxis.set_major_formatter(mpl.ticker.StrMethodFormatter('{x:,.0f}'))
         #if yLimits[0] is not None:
         #    axs[i].ylim((yLimits[0], yLimits[1])) 
         axs[i].grid(visible=False)
